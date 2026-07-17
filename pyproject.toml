@@ -32,10 +32,14 @@ dev = [
   "ruff==0.12.9",
 ]
 
-# MigrateOS is a deployable application monorepo, not a distributable `migrateos`
-# import package. Runtime imports use the explicit backend/workers packages.
 [tool.poetry]
-package-mode = false
+# The distribution is named MigrateOS, while its import packages are explicit.
+# Installing them makes backend.app.main and workers importable from Poetry,
+# Docker, tests, and any future process without PYTHONPATH manipulation.
+packages = [
+  { include = "backend" },
+  { include = "workers" },
+]
 
 [tool.setuptools.packages.find]
 include = ["backend*", "workers*"]
