@@ -29,7 +29,7 @@ Run the web app, API, worker, and sandbox runner as separately deployable worklo
 
 ## Render packaging
 
-Render deploys the API as an application, not a Python distribution. `pyproject.toml` therefore sets Poetry `package-mode = false`: Poetry installs runtime dependencies without searching for a nonexistent `migrateos/` source package. The start command imports the real package explicitly: `uvicorn backend.app.main:app`. Docker retains setuptools package discovery for its independent `pip install .` build path, which correctly includes `backend` and `workers`.
+Render deploys the API as an application, not a Python distribution. `pyproject.toml` therefore sets Poetry `package-mode = false`: Poetry installs runtime dependencies without searching for a nonexistent `migrateos/` source package. The repository root must be the Render service root directory, and the start command is `poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`. Do not configure Render to run `app.main:app` or set `backend/` as the service root; both select a different import architecture. Docker retains setuptools package discovery for its independent `pip install .` build path, which correctly includes `backend` and `workers`.
 
 ## Release procedure
 

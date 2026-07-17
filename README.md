@@ -65,6 +65,8 @@ python -m celery --app workers.celery_app:celery_app worker --loglevel=INFO
 
 Run the full quality suite with `make verify`. Run `cp .env.example .env` first and point database/Redis URLs at local services when using native processes.
 
+The canonical API module is `backend.app.main:app`. Run all local, Docker, Render, Alembic, test, and worker commands from the repository root; `app.main:app` is not a valid MigrateOS entrypoint.
+
 ## Quality gates
 
 `main` is protected by Python Ruff/Black/Pytest/compile checks and frontend Prettier/ESLint/Vitest/Next build checks. The GitHub Actions workflow also validates the Compose topology.
