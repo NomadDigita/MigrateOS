@@ -7,7 +7,7 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.api.routes import auth, health, repository_intelligence
+from backend.app.api.routes import auth, health, live_platform, repository_import, repository_intelligence
 from backend.app.core.config import get_settings
 from backend.app.core.logging import configure_logging
 
@@ -48,6 +48,8 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix="/api/v1")
     app.include_router(auth.router, prefix="/api/v1")
     app.include_router(repository_intelligence.router, prefix="/api/v1")
+    app.include_router(live_platform.router, prefix="/api/v1")
+    app.include_router(repository_import.router, prefix="/api/v1")
     return app
 
 
