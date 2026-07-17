@@ -15,9 +15,9 @@
   "dependencies": {
     "@tanstack/react-query": "5.66.8",
     "clsx": "2.1.1",
-    "framer-motion": "12.6.2",
+    "framer-motion": "12.42.2",
     "lucide-react": "0.468.0",
-    "motion-dom": "12.6.2",
+    "motion-dom": "12.42.2",
     "next": "15.5.18",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -41,6 +41,6 @@
     "vitest": "3.2.6"
   },
   "overrides": {
-    "motion-dom": "12.6.2"
+    "motion-dom": "12.42.2"
   }
 }
