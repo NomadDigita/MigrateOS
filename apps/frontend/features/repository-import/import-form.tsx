@@ -1,4 +1,51 @@
 "use client";
+
 import { useState } from "react";
-import { publicConfig } from "@/lib/config";
-export function ImportForm(){const [url,setUrl]=useState("");const [state,setState]=useState("idle");async function submit(e:React.FormEvent){e.preventDefault();setState("loading");try{const r=await fetch(`${publicConfig.apiBaseUrl}/repositories/import`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({github_url:url})});if(!r.ok)throw new Error();setState("success")}catch{setState("error")}}return <form onSubmit={submit} className="mt-8 flex max-w-2xl flex-col gap-3"><input required type="url" value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://github.com/vercel/next.js" className="rounded-xl border bg-surface px-4 py-3 text-ink"/><button type="button" onClick={()=>setUrl("https://github.com/vercel/next.js")} className="text-left text-sm text-accent-primary">Use demo repository</button><button disabled={state==="loading"} className="rounded-xl bg-accent-primary px-5 py-3 font-bold text-canvas">{state==="loading"?"Analyzing repository…":"Analyze repository"}</button>{state==="success"&&<p className="text-status-success">Repository imported. Open the dashboard to watch live progress.</p>}{state==="error"&&<p className="text-status-failed">Import failed. Confirm that the repository is public and retry.</p>}</form>}
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+
+import { importRepository } from "@/lib/platform-api";
+
+export function ImportForm() {
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+  const mutation = useMutation({
+    mutationFn: importRepository,
+    onSuccess: ({ job_id: jobId }) => router.push(`/jobs/${jobId}`),
+  });
+
+  return (
+    <form
+      className="mt-8 flex max-w-2xl flex-col gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        mutation.mutate(url.trim());
+      }}
+    >
+      <label className="text-sm font-semibold text-ink" htmlFor="repository-url">
+        Public GitHub repository URL
+      </label>
+      <input
+        required
+        id="repository-url"
+        type="url"
+        value={url}
+        onChange={(event) => setUrl(event.target.value)}
+        placeholder="https://github.com/owner/repository"
+        aria-describedby={mutation.isError ? "repository-url-error" : undefined}
+        className="rounded-xl border bg-surface px-4 py-3 text-ink outline-none transition focus-visible:border-accent-primary focus-visible:ring-2 focus-visible:ring-accent-primary/30"
+      />
+      <button
+        disabled={mutation.isPending}
+        className="rounded-xl bg-accent-primary px-5 py-3 font-bold text-canvas transition hover:bg-accent-primary/90 disabled:cursor-wait disabled:opacity-60"
+      >
+        {mutation.isPending ? "Creating analysis job…" : "Analyze repository"}
+      </button>
+      {mutation.isError ? (
+        <p id="repository-url-error" className="text-sm text-status-failed" role="alert">
+          {mutation.error.message}
+        </p>
+      ) : null}
+    </form>
+  );
+}

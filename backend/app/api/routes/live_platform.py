@@ -1,23 +1,120 @@
-"""Live dashboard and WebSocket endpoints backed by Supabase data."""
+"""Live dashboard, SSE replay, and WebSocket delivery backed by PostgreSQL."""
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from __future__ import annotations
 
-from backend.app.core.config import get_settings
-from backend.app.infrastructure.supabase.client import SupabaseClient
-from backend.app.services.live_events import event_hub
+import asyncio
+import json
+from collections.abc import AsyncIterator
+from typing import Annotated
+from uuid import UUID
 
-router = APIRouter(prefix="/platform", tags=["live platform"])
+from fastapi import APIRouter, Header, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
 
-@router.get("/overview")
+from backend.app.services.workflow import WorkflowNotFoundError, WorkflowService
+
+router = APIRouter(tags=["live platform"])
+
+
+def _storage_unavailable(error: SQLAlchemyError) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="Workflow storage is unavailable. Retry after the database is ready.",
+    )
+
+
+@router.get("/platform/overview")
 async def overview() -> dict[str, object]:
-    if not get_settings().supabase_configured: raise HTTPException(503, "Supabase is not configured.")
-    client = SupabaseClient()
-    projects, repositories, plans, events = await __import__('asyncio').gather(client.select('projects', query={'select':'id,name,created_at','order':'created_at.desc','limit':'20'}), client.select('repositories', query={'select':'id,project_id,provider,external_id,default_branch,created_at','order':'created_at.desc','limit':'50'}), client.select('migration_plans', query={'select':'id,status,risk_score,created_at','order':'created_at.desc','limit':'50'}), client.select('events', query={'select':'id,event_type,payload,created_at','order':'created_at.desc','limit':'100'}))
-    return {'projects': projects, 'repositories': repositories, 'plans': plans, 'events': events, 'metrics': {'project_count':len(projects),'repository_count':len(repositories),'plan_count':len(plans)}}
+    """Return dashboard metrics, historical jobs, and durable recent activity."""
 
-@router.websocket('/events')
-async def event_stream(socket: WebSocket) -> None:
-    await event_hub.connect(socket)
     try:
-        while True: await socket.receive_text()
-    except WebSocketDisconnect: event_hub.disconnect(socket)
+        return WorkflowService().platform_overview()
+    except SQLAlchemyError as error:
+        raise _storage_unavailable(error) from error
+
+
+@router.get("/migration-jobs/{job_id}")
+async def migration_job(job_id: UUID) -> dict[str, object]:
+    """Read a job's persisted plan, report, artifacts, agent history, and events."""
+
+    try:
+        return WorkflowService().job_detail(job_id)
+    except WorkflowNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        raise _storage_unavailable(error) from error
+
+
+def _cursor(last_event_id: str | None, after_sequence: int) -> int:
+    if last_event_id is None:
+        return after_sequence
+    try:
+        return max(after_sequence, int(last_event_id))
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Last-Event-ID must be an event sequence number.",
+        ) from error
+
+
+@router.get("/migration-jobs/{job_id}/events")
+async def event_stream(
+    job_id: UUID,
+    after_sequence: int = 0,
+    last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
+) -> StreamingResponse:
+    """Stream persisted events and replay missed records after refresh/reconnect."""
+
+    cursor = _cursor(last_event_id, after_sequence)
+    service = WorkflowService()
+    try:
+        await asyncio.to_thread(service.events_after, job_id, cursor)
+    except WorkflowNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        raise _storage_unavailable(error) from error
+
+    async def stream() -> AsyncIterator[str]:
+        nonlocal cursor
+        while True:
+            events = await asyncio.to_thread(service.events_after, job_id, cursor)
+            for event in events:
+                cursor = int(event["sequence"])
+                yield (
+                    f"id: {cursor}\n"
+                    f"event: {event['event_type']}\n"
+                    f"data: {json.dumps(event, separators=(',', ':'))}\n\n"
+                )
+            yield ": keep-alive\n\n"
+            await asyncio.sleep(1)
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.websocket("/migration-jobs/{job_id}/events/ws")
+async def websocket_event_stream(
+    websocket: WebSocket, job_id: UUID, after_sequence: int = 0
+) -> None:
+    """Deliver the same durable event stream over WebSockets for interactive clients."""
+
+    service = WorkflowService()
+    cursor = after_sequence
+    await websocket.accept()
+    try:
+        while True:
+            events = await asyncio.to_thread(service.events_after, job_id, cursor)
+            for event in events:
+                cursor = int(event["sequence"])
+                await websocket.send_json(event)
+            await asyncio.sleep(1)
+    except WorkflowNotFoundError:
+        await websocket.close(code=1008, reason="Migration job not found")
+    except SQLAlchemyError:
+        await websocket.close(code=1011, reason="Workflow storage unavailable")
+    except WebSocketDisconnect:
+        return

@@ -21,9 +21,8 @@ class Settings(BaseSettings):
     cors_origins: str = ""
     dev_auth_token: str | None = None
     openai_model: str | None = None
-    supabase_url: str | None = None
-    supabase_service_role_key: str | None = None
     default_project_id: str | None = None
+    workflow_dispatch: Literal["background", "celery"] = "background"
 
     @property
     def is_development(self) -> bool:
@@ -34,10 +33,6 @@ class Settings(BaseSettings):
         """Return a normalized allowlist from a comma-separated environment value."""
 
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
-
-    @property
-    def supabase_configured(self) -> bool:
-        return bool(self.supabase_url and self.supabase_service_role_key)
 
 
 @lru_cache

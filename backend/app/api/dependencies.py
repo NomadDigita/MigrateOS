@@ -36,7 +36,9 @@ def require_authenticated_principal(
         and credentials.credentials == resolved_settings.dev_auth_token
     )
     if is_valid_development_token:
-        return AuthenticatedPrincipal(subject="local-developer", authentication_method="development_bearer")
+        return AuthenticatedPrincipal(
+            subject="local-developer", authentication_method="development_bearer"
+        )
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

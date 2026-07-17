@@ -4,13 +4,20 @@ import asyncio
 
 from fastapi import APIRouter, HTTPException
 
-from backend.app.application.repository_intelligence.models import AnalysisRequest, RepositoryAnalysis
+from backend.app.application.repository_intelligence.models import (
+    AnalysisRequest,
+    RepositoryAnalysis,
+)
 from backend.app.application.repository_intelligence.service import RepositoryIntelligenceService
 
 router = APIRouter(prefix="/repository-intelligence", tags=["repository intelligence"])
 
 
-@router.post("/analyze", response_model=RepositoryAnalysis, summary="Analyze a local or public GitHub repository")
+@router.post(
+    "/analyze",
+    response_model=RepositoryAnalysis,
+    summary="Analyze a local or public GitHub repository",
+)
 async def analyze_repository(request: AnalysisRequest) -> RepositoryAnalysis:
     """Run bounded, deterministic analysis outside the request event loop."""
 

@@ -3,7 +3,10 @@
 import { animate, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export function AnimatedCounter({ value, suffix = "" }: Readonly<{ value: number; suffix?: string }>) {
+export function AnimatedCounter({
+  value,
+  suffix = "",
+}: Readonly<{ value: number; suffix?: string }>) {
   const motionValue = useMotionValue(value);
   const [display, setDisplay] = useState(value);
 
@@ -14,5 +17,10 @@ export function AnimatedCounter({ value, suffix = "" }: Readonly<{ value: number
     return controls.stop;
   }, [motionValue, value]);
 
-  return <span>{display.toLocaleString()}{suffix}</span>;
+  return (
+    <span>
+      {display.toLocaleString()}
+      {suffix}
+    </span>
+  );
 }

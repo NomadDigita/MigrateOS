@@ -13,12 +13,21 @@ interface StatCardProps {
   detail: string;
 }
 
-export function StatCard({ label, value, suffix, status, icon: Icon, detail }: Readonly<StatCardProps>) {
+export function StatCard({
+  label,
+  value,
+  suffix,
+  status,
+  icon: Icon,
+  detail,
+}: Readonly<StatCardProps>) {
   return (
     <GlassPanel hoverable className="p-4">
       <div className="relative flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">{label}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">
+            {label}
+          </p>
           <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink">
             <AnimatedCounter value={value} suffix={suffix} />
           </p>

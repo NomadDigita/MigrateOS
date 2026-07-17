@@ -1,3 +1,5 @@
 import { LandingExperience } from "@/features/landing/landing-experience";
 
-export default function LandingPage() { return <LandingExperience />; }
+export default function LandingPage() {
+  return <LandingExperience />;
+}

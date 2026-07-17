@@ -85,7 +85,7 @@ The status transition policy is enforced centrally in the domain layer. Workers 
 
 ## Reliability and observability
 
-Each request, job, execution, agent run, and external call carries a correlation ID. Application events are written transactionally to PostgreSQL, then dispatched to workers; events are replayed from durable storage when an SSE client reconnects. Tasks use deterministic idempotency keys and persist checkpoints only after their output artifact validates. OpenTelemetry-compatible traces, structured logs, metrics, and redacted error records make a failed run diagnosable.
+Each request, job, execution, agent run, and external call carries a correlation ID. Application events are written transactionally to PostgreSQL before they are emitted to SSE or WebSocket clients; both transports replay from durable storage after reconnect. Tasks use deterministic idempotency keys and persist checkpoints only after their output artifact validates. OpenTelemetry-compatible traces, structured logs, metrics, and redacted error records make a failed run diagnosable.
 
 ## Architecture decision records
 

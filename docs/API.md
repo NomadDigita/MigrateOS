@@ -63,6 +63,12 @@
 
 `POST /api/v1/repository-intelligence/analyze` accepts exactly one `local_path` or public HTTPS `github_url`, with an optional branch. The service never executes repository code. It returns typed snapshot metadata, policy-filtered files, technology/dependency/architecture findings, graph nodes/edges, health score, migration opportunities, and ordered structured analysis events.
 
+### Implemented in Milestone 5
+
+`POST /api/v1/repositories/import` accepts a public HTTPS GitHub repository URL, writes the repository/job command first, and returns `202` with the durable job identifier. Repository intelligence and plan generation run after acceptance. `GET /api/v1/platform/overview` returns persisted dashboard projections; `GET /api/v1/migration-jobs/{job_id}` returns the snapshot summary, plan versions, report, artifacts, typed agent activity, and complete event history.
+
+`POST /api/v1/migration-jobs/{job_id}/plans/{plan_id}/approval` records explicit approval and starts the constrained execution stage. `GET /api/v1/migration-jobs/{job_id}/events` is a replayable SSE stream; it honors `Last-Event-ID` as the durable event sequence. `/api/v1/migration-jobs/{job_id}/events/ws` serves the same persisted stream over WebSockets. The application does not claim a patch, validation, or pull request was produced unless its required adapter/policy gate completed.
+
 ## Command request examples
 
 ```json

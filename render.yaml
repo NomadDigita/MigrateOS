@@ -3,6 +3,6 @@ services:
     name: migrateos-api
     runtime: python
     buildCommand: pip install "poetry==2.1.3" && poetry install --only main --no-interaction --no-ansi
-    startCommand: poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: poetry run alembic -c backend/alembic.ini upgrade head && poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     autoDeploy: true

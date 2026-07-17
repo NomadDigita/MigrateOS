@@ -38,7 +38,18 @@ class DependencyRecord(BaseModel):
 
 class TechnologyRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    category: Literal["language", "framework", "package_manager", "build_system", "database", "container", "cloud", "ci", "iac", "workspace"]
+    category: Literal[
+        "language",
+        "framework",
+        "package_manager",
+        "build_system",
+        "database",
+        "container",
+        "cloud",
+        "ci",
+        "iac",
+        "workspace",
+    ]
     name: str
     confidence: float = Field(ge=0, le=1)
     evidence_paths: list[str]

@@ -1,55 +1,145 @@
-"""Persisted repository import, analysis, and plan-generation workflow."""
+"""Repository onboarding commands for the durable modernization workflow."""
 
-import asyncio
-from datetime import UTC, datetime
+from __future__ import annotations
+
+import secrets
+from typing import Annotated
 from urllib.parse import urlparse
+from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, status
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.exc import SQLAlchemyError
 
-from backend.app.application.migration_planning.planner import MigrationPlanner
-from backend.app.application.repository_intelligence.models import AnalysisRequest
-from backend.app.application.repository_intelligence.service import RepositoryIntelligenceService
 from backend.app.core.config import get_settings
-from backend.app.infrastructure.supabase.client import SupabaseClient
-from backend.app.services.live_events import event_hub
+from backend.app.services.workflow import (
+    WorkflowConflictError,
+    WorkflowNotFoundError,
+    WorkflowService,
+)
 
 router = APIRouter(prefix="/repositories", tags=["repository workflow"])
 
 
 class ImportRequest(BaseModel):
-    github_url: str
-    branch: str | None = None
+    """Public GitHub repository reference accepted by the onboarding flow."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    github_url: str = Field(min_length=20, max_length=2048)
+    branch: str | None = Field(default=None, min_length=1, max_length=255)
 
 
-async def publish(client: SupabaseClient, project_id: str, event_type: str, payload: dict[str, object]) -> None:
-    event = await client.emit(project_id, event_type, payload)
-    await event_hub.publish(event_type, event)
+class ImportResponse(BaseModel):
+    """The persisted job identity clients use for live status and replay."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: UUID
+    repository_id: UUID
+    status: str
 
 
-@router.post("/import")
-async def import_repository(request: ImportRequest) -> dict[str, object]:
-    if not get_settings().supabase_configured:
-        raise HTTPException(503, "Supabase is not configured.")
-    parsed = urlparse(request.github_url)
+class ApprovalRequest(BaseModel):
+    """Explicit plan approval comment retained in the audit record."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    comment: str | None = Field(default=None, max_length=2_000)
+
+
+def _validate_github_url(value: str) -> str:
+    parsed = urlparse(value)
     if parsed.scheme != "https" or parsed.hostname not in {"github.com", "www.github.com"}:
-        raise HTTPException(422, "Only public HTTPS GitHub repository URLs are supported.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Only public HTTPS GitHub repository URLs are supported.",
+        )
+    segments = [segment for segment in parsed.path.split("/") if segment]
+    if len(segments) != 2 or parsed.query or parsed.fragment:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Provide a repository URL in the form https://github.com/owner/repository.",
+        )
+    return f"https://github.com/{segments[0]}/{segments[1].removesuffix('.git')}"
+
+
+def _dispatch(background_tasks: BackgroundTasks, *, task_name: str, job_id: UUID) -> None:
+    """Use Celery only when it is explicitly deployed; otherwise use an in-process task."""
+
     settings = get_settings()
-    if not settings.default_project_id:
-        raise HTTPException(503, "Repository onboarding is not configured.")
-    client = SupabaseClient()
+    if settings.workflow_dispatch == "celery":
+        from workers.celery_app import celery_app
+
+        celery_app.send_task(task_name, args=[str(job_id)])
+        return
+    service = WorkflowService()
+    if task_name == "migrateos.discovery":
+        background_tasks.add_task(service.run_discovery, job_id)
+    else:
+        background_tasks.add_task(service.run_execution, job_id)
+
+
+@router.post("/import", response_model=ImportResponse, status_code=status.HTTP_202_ACCEPTED)
+async def import_repository(
+    request: ImportRequest,
+    background_tasks: BackgroundTasks,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+) -> ImportResponse:
+    """Persist an import command and begin repository intelligence asynchronously."""
+
+    normalized_url = _validate_github_url(request.github_url)
     try:
-        project_id = settings.default_project_id
-        repository = await client.insert("repositories", {"project_id": project_id, "provider": "github", "external_id": request.github_url, "default_branch": request.branch or "main"})
-        await publish(client, project_id, "repository.imported", {"repository_id": repository["id"], "url": request.github_url})
-        analysis = await asyncio.to_thread(RepositoryIntelligenceService().analyze, AnalysisRequest(github_url=request.github_url, branch=request.branch))
-        snapshot = await client.insert("repository_snapshots", {"repository_id": repository["id"], "commit_sha": analysis.snapshot.commit_sha, "branch": analysis.snapshot.branch, "metadata": analysis.model_dump(mode="json")})
-        await publish(client, project_id, "repository.snapshot_created", {"snapshot_id": snapshot["id"], "commit_sha": analysis.snapshot.commit_sha or ""})
-        plan = MigrationPlanner().create(analysis)
-        persisted_plan = await client.insert("migration_plans", {"snapshot_id": snapshot["id"], "status": "awaiting_approval", "version": 1, "summary": plan.model_dump(mode="json"), "risk_score": plan.risk_score})
-        for step in plan.steps:
-            await client.insert("migration_steps", {"plan_id": persisted_plan["id"], "step_key": step.id, "payload": step.model_dump(mode="json"), "priority": step.priority, "risk": step.risk.value, "required_approval": step.required_approval})
-        await publish(client, project_id, "migration.plan_generated", {"plan_id": persisted_plan["id"], "risk_score": plan.risk_score})
-        return {"repository": repository, "snapshot": snapshot, "analysis": analysis, "plan": persisted_plan}
-    except Exception as error:
-        raise HTTPException(502, "Repository workflow failed; inspect the live event stream.") from error
+        result = WorkflowService().create_import(
+            github_url=normalized_url,
+            branch=request.branch,
+            idempotency_key=idempotency_key or secrets.token_urlsafe(24),
+        )
+    except WorkflowConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
+    except WorkflowNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(error)
+        ) from error
+    except SQLAlchemyError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Workflow storage is unavailable. Retry after the database is ready.",
+        ) from error
+
+    job_id = UUID(result["job_id"])
+    _dispatch(background_tasks, task_name="migrateos.discovery", job_id=job_id)
+    return ImportResponse(
+        job_id=job_id,
+        repository_id=UUID(result["repository_id"]),
+        status=result["status"],
+    )
+
+
+approval_router = APIRouter(prefix="/migration-jobs", tags=["migration workflow"])
+
+
+@approval_router.post("/{job_id}/plans/{plan_id}/approval", status_code=status.HTTP_202_ACCEPTED)
+async def approve_plan(
+    job_id: UUID,
+    plan_id: UUID,
+    request: ApprovalRequest,
+    background_tasks: BackgroundTasks,
+) -> dict[str, str]:
+    """Record user approval before scheduling the constrained execution stage."""
+
+    try:
+        result = WorkflowService().approve_plan(
+            job_id=job_id, plan_id=plan_id, comment=request.comment
+        )
+    except WorkflowNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    except WorkflowConflictError as error:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
+    except SQLAlchemyError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Workflow storage is unavailable. Retry after the database is ready.",
+        ) from error
+    _dispatch(background_tasks, task_name="migrateos.execution", job_id=job_id)
+    return result

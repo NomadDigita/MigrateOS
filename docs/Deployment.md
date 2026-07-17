@@ -29,7 +29,7 @@ Run the web app, API, worker, and sandbox runner as separately deployable worklo
 
 ## Render packaging
 
-Render installs the MigrateOS distribution with Poetry. Its import packages are explicitly configured as `backend` and `workers`, so Poetry installs them into the virtual environment rather than guessing that a `migrateos/` package exists. The repository root must be the Render service root directory, and the start command is `poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`. Do not configure Render to run `app.main:app` or set `backend/` as the service root; both select a different import architecture. Docker retains matching setuptools package discovery for its independent `pip install .` build path.
+Render installs the MigrateOS distribution with Poetry. Its import packages are explicitly configured as `backend` and `workers`, so Poetry installs them into the virtual environment rather than guessing that a `migrateos/` package exists. The repository root must be the Render service root directory, and the start command runs `poetry run alembic -c backend/alembic.ini upgrade head` before `poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`. Configure `MIGRATEOS_DATABASE_URL` with the Supabase PostgreSQL connection string; the service uses SQLAlchemy/Alembic rather than a browser-exposed Supabase credential. Do not configure Render to run `app.main:app` or set `backend/` as the service root; both select a different import architecture. Docker retains matching setuptools package discovery for its independent `pip install .` build path.
 
 ## Release procedure
 

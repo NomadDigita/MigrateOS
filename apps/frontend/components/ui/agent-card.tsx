@@ -33,7 +33,11 @@ export function AgentCard({ name, status, reasoning, index = 0 }: Readonly<Agent
           </div>
           <motion.span
             className="h-2.5 w-2.5 shrink-0 rounded-full bg-status-migrating"
-            animate={status === "migrating" ? { scale: [1, 1.55, 1], opacity: [0.9, 0.35, 0.9] } : undefined}
+            animate={
+              status === "migrating"
+                ? { scale: [1, 1.55, 1], opacity: [0.9, 0.35, 0.9] }
+                : undefined
+            }
             transition={{ repeat: Infinity, duration: 1.6 }}
             aria-label={`${name} is ${status}`}
           />

@@ -19,8 +19,18 @@ depends_on: str | Sequence[str] | None = None
 
 def _timestamps() -> list[sa.Column[object]]:
     return [
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
     ]
 
 
@@ -48,7 +58,9 @@ def upgrade() -> None:
         sa.Column("provider", sa.String(length=40), nullable=False),
         sa.Column("external_id", sa.String(length=255), nullable=False),
         sa.Column("default_branch", sa.String(length=255), nullable=False),
-        sa.Column("connection_status", sa.String(length=32), nullable=False, server_default="connected"),
+        sa.Column(
+            "connection_status", sa.String(length=32), nullable=False, server_default="connected"
+        ),
         *_timestamps(),
         sa.UniqueConstraint("project_id", "provider", "external_id"),
     )
@@ -68,7 +80,9 @@ def upgrade() -> None:
         sa.UniqueConstraint("project_id", "idempotency_key"),
     )
     op.create_index("ix_migration_jobs_project_id", "migration_jobs", ["project_id"])
-    op.create_index("ix_migration_jobs_repository_status", "migration_jobs", ["repository_id", "status"])
+    op.create_index(
+        "ix_migration_jobs_repository_status", "migration_jobs", ["repository_id", "status"]
+    )
     op.create_table(
         "migration_plans",
         sa.Column("id", uuid_type, primary_key=True),
@@ -98,7 +112,9 @@ def upgrade() -> None:
     op.create_table(
         "reports",
         sa.Column("id", uuid_type, primary_key=True),
-        sa.Column("job_id", uuid_type, sa.ForeignKey("migration_jobs.id"), nullable=False, unique=True),
+        sa.Column(
+            "job_id", uuid_type, sa.ForeignKey("migration_jobs.id"), nullable=False, unique=True
+        ),
         sa.Column("status", sa.String(length=32), nullable=False),
         sa.Column("summary", sa.JSON(), nullable=False),
         sa.Column("artifact_locator", sa.String(length=512)),
@@ -113,7 +129,12 @@ def upgrade() -> None:
         sa.Column("status", sa.String(length=32), nullable=False),
         sa.Column("message", sa.Text(), nullable=False),
         sa.Column("payload", sa.JSON(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
     )
     op.create_index("ix_agent_logs_job_id", "agent_logs", ["job_id"])
     op.create_index("ix_agent_logs_job_created", "agent_logs", ["job_id", "created_at"])

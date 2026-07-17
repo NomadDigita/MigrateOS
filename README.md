@@ -8,7 +8,9 @@ Milestone 3 adds deterministic repository intelligence: policy-aware scanning, t
 
 ## Status
 
-Milestone 2 establishes the runnable platform foundation: a Next.js command-center UI, FastAPI control plane, Celery worker boundary, PostgreSQL schema migration, Redis integration, Docker Compose topology, and CI quality gates. Repository intelligence and migration mutation remain deliberately deferred to their dedicated milestones.
+Milestones 2 through 4 establish the runnable platform, deterministic repository intelligence, and approval-ready migration planning. The current Milestone 5 workflow persists repository intake, immutable snapshot metadata, analysis and planning artifacts, a report, typed agent outcomes, approvals, and sequence-numbered events before exposing them to the dashboard. The command center and job views use only the public API; clients can reload historical activity and reconnect over SSE or WebSockets without losing events.
+
+Execution remains approval-gated. When a scoped patch provider, validation adapter, or GitHub App authorization is not configured, the platform records an explicit `blocked`/`not_run` outcome in the report rather than fabricating a code change, test result, validation result, or pull request.
 
 ## What MigrateOS will do
 
