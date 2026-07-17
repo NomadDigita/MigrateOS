@@ -6,7 +6,7 @@ MigrateOS helps engineering teams understand, plan, execute, validate, and repor
 
 ## Status
 
-Milestone 1 is complete: the product contract, architecture, agent contracts, data/API designs, UX specification, and delivery plan are documented. Runtime application code deliberately begins in Milestone 2 so the first implementation has stable boundaries.
+Milestone 2 establishes the runnable platform foundation: a Next.js command-center UI, FastAPI control plane, Celery worker boundary, PostgreSQL schema migration, Redis integration, Docker Compose topology, and CI quality gates. Repository intelligence and migration mutation remain deliberately deferred to their dedicated milestones.
 
 ## What MigrateOS will do
 
@@ -41,9 +41,31 @@ Milestone 1 is complete: the product contract, architecture, agent contracts, da
 | [Deployment](docs/Deployment.md) | Local, production, and operational topology |
 | [Contributing](docs/Contributing.md) | Quality bar and contribution workflow |
 
-## Planned local development
+## Local development
 
-Milestone 2 will introduce a Docker Compose development environment with a Next.js web application, FastAPI service, PostgreSQL, Redis, and a Celery worker. The exact commands will be added only alongside their runnable implementation.
+### Docker Compose (recommended)
+
+```sh
+cp .env.example .env
+docker compose up --build
+```
+
+The frontend is available at `http://localhost:3000`; API liveness is at `http://localhost:8000/api/v1/health`. Compose applies the initial database migration before the API starts.
+
+### Native development
+
+```sh
+python -m pip install -e ".[dev]"
+npm --prefix apps/frontend install
+python -m uvicorn backend.app.main:app --reload
+python -m celery --app workers.celery_app:celery_app worker --loglevel=INFO
+```
+
+Run the full quality suite with `make verify`. Run `cp .env.example .env` first and point database/Redis URLs at local services when using native processes.
+
+## Quality gates
+
+`main` is protected by Python Ruff/Black/Pytest/compile checks and frontend Prettier/ESLint/Vitest/Next build checks. The GitHub Actions workflow also validates the Compose topology.
 
 ## Repository note
 

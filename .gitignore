@@ -1,0 +1,28 @@
+# JavaScript
+node_modules/
+.next/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+*.egg-info/
+
+# Environment and local tooling
+.env
+.env.local
+.env.*.local
+!.env.example
+.DS_Store
+
+# Build and runtime artifacts
+dist/
+build/
+*.log
+postgres-data/
+redis-data/

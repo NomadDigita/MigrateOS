@@ -4,6 +4,8 @@
 
 MigrateOS uses a modular monolith for the control plane and independently scalable workers for repository and model work. This is intentionally simpler than microservices for an early open-source product while preserving clean boundaries. FastAPI owns request handling and job coordination; Celery workers own long-running work; PostgreSQL holds authoritative state; Redis transports short-lived work and event fan-out.
 
+**Milestone 2 implementation:** `apps/frontend` is a standalone Next.js application; `backend` contains API/domain/application/infrastructure modules; `workers` contains the Celery process. Docker Compose starts all five local services with health-gated dependencies. The initial API exposes a liveness contract and a development-only bearer authentication boundary that rejects all requests unless explicitly configured.
+
 ```mermaid
 flowchart LR
   U[Engineer] --> W[Next.js web app]

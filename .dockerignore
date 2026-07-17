@@ -1,0 +1,11 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+.ruff_cache
+node_modules
+apps/frontend/node_modules
+apps/frontend/.next
+coverage
+postgres-data
+redis-data

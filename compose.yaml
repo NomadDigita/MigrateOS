@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: migrateos
+      POSTGRES_USER: migrateos
+      POSTGRES_PASSWORD: migrateos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U migrateos -d migrateos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    env_file: .env
+    environment:
+      MIGRATEOS_DATABASE_URL: postgresql+psycopg://migrateos:migrateos@postgres:5432/migrateos
+      MIGRATEOS_REDIS_URL: redis://redis:6379/0
+    command: ["sh", "-c", "alembic -c backend/alembic.ini upgrade head && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    env_file: .env
+    environment:
+      MIGRATEOS_DATABASE_URL: postgresql+psycopg://migrateos:migrateos@postgres:5432/migrateos
+      MIGRATEOS_REDIS_URL: redis://redis:6379/0
+    command: ["celery", "--app", "workers.celery_app:celery_app", "worker", "--loglevel=INFO"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: apps/frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    depends_on:
+      api: { condition: service_started }
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres-data:
+  redis-data:

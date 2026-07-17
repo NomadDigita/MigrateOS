@@ -13,6 +13,12 @@
 | AI adapter | Structured model calls, prompt policy, output validation, usage accounting | OpenAI Responses API with configurable model/capability adapters |
 | Runner | Disposable policy-controlled validation environment | Docker / Docker Compose |
 
+## Milestone 2 implemented foundation
+
+The first executable increment exposes a dependency-free `GET /api/v1/health` liveness contract and a fail-closed `GET /api/v1/auth/me` authentication scaffold. Local bearer authentication is accepted only when both the development environment and an explicit development token are configured; production rejects this scaffold until an OIDC adapter is introduced. The worker accepts a UUID-validated discovery command through Celery and records structured events, but it has no repository mutation capability. This deliberately establishes queue safety before repository execution arrives in Milestone 3.
+
+The Next.js application provides a responsive Signal Grid landing page and a command-center dashboard composed from reusable primitives. Public runtime configuration is Zod-validated; React Query owns server-state infrastructure; theme preference is persisted and driven entirely by CSS variables. No `NEXT_PUBLIC_` secret is defined or consumed.
+
 ## Repository processing contract
 
 1. The API validates a repository request and records a `MigrationJob` with an idempotency key.

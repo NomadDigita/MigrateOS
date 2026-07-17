@@ -55,6 +55,10 @@
 | `GET` | `/migration-jobs/{job_id}/report` | Read completed report data/rendering metadata |
 | `POST` | `/migration-jobs/{job_id}/pull-requests` | Create a draft PR after authorization and validation policy pass |
 
+### Implemented in Milestone 2
+
+`GET /api/v1/health` returns the API liveness envelope (`status`, service name, environment, and UTC timestamp) without requiring dependencies. `GET /api/v1/auth/me` is an authentication scaffold: it fails closed by default and recognizes a configured local bearer token only in the development environment. Repository and job endpoints remain reserved contracts until their corresponding milestones; the platform does not claim those workflows are available yet.
+
 ## Command request examples
 
 ```json

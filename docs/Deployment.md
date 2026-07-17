@@ -9,6 +9,10 @@
 | Staging | Integration/evaluation validation | Isolated GitHub/OpenAI projects and scrubbed test repositories |
 | Production | Customer workloads | Managed Postgres/Redis/object storage, secret manager, workload identities, monitored sandbox workers |
 
+## Milestone 2 local topology
+
+`compose.yaml` provides a reproducible local stack: Next.js frontend (3000), FastAPI API (8000), Celery worker, PostgreSQL 16, and Redis 7.4. The API waits for healthy Postgres/Redis and runs Alembic before serving traffic. All Python container processes run unprivileged. `docker compose config --quiet` is a CI gate; the next milestone adds a running integration smoke test against this topology.
+
 ## Production topology
 
 Run the web app, API, worker, and sandbox runner as separately deployable workloads. PostgreSQL, Redis, object storage, and secrets are managed services. API workloads are stateless and horizontally scalable; worker queues separate latency-sensitive planning from resource-intensive repository/validation work. Sandbox jobs use isolated short-lived compute with no host Docker socket, unprivileged execution, mounted workspace only, egress policy, and hard resource limits.

@@ -1,17 +1,18 @@
 # Folder Structure
 
-The source tree is intentionally introduced with runnable foundation work in Milestone 2. This document is the approved layout; creating empty source folders now would add noise without executable ownership.
+Milestone 2 implements the first runnable portion of this layout. Additional modules are introduced only when they have executable ownership.
 
 ```text
 MigrateOS/
-├── frontend/                         # Next.js application
+├── apps/
+│   └── frontend/                     # Next.js 15 application
 │   ├── app/                          # Route segments and layouts
 │   ├── components/                   # Reusable visual components
 │   ├── features/                     # Feature-local UI, hooks, schemas
 │   ├── lib/                          # API client, utilities, configuration
 │   ├── styles/                       # Tokens and global styles
 │   └── tests/                        # UI/unit/E2E test support
-├── backend/
+├── backend/                          # FastAPI control plane
 │   ├── app/
 │   │   ├── api/                      # FastAPI routers, dependencies, schemas
 │   │   ├── application/              # Use cases and port definitions
@@ -23,9 +24,14 @@ MigrateOS/
 │   │   ├── services/                 # Cross-cutting orchestration helpers
 │   │   └── main.py                   # Composition root only
 │   ├── alembic/                      # Schema migrations
-│   └── tests/                        # Unit, integration, fixtures
+│   ├── tests/                        # API/unit tests
+│   └── alembic/                      # Forward-only PostgreSQL migrations
+├── workers/                          # Celery app and typed task entrypoints
+├── docker/                           # Production container definitions
+├── packages/                         # Future independently versioned packages only
+├── shared/                           # Language-neutral generated/integration assets
 ├── infra/
-│   ├── docker/                       # API/worker/web container definitions
+│   ├── docker/                       # Future infrastructure support assets
 │   ├── compose/                      # Local and CI compose overlays
 │   ├── github/                       # Actions and reusable workflow support
 │   └── observability/                # Telemetry/dashboard configuration
