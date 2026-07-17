@@ -88,6 +88,9 @@ class MigrationJob(Base):
     repository_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("repositories.id"), nullable=False)
     source_ref: Mapped[str] = mapped_column(String(255), nullable=False)
     source_commit_sha: Mapped[str | None] = mapped_column(String(64))
+    source_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("source_snapshots.id"), index=True
+    )
     status: Mapped[MigrationJobStatus] = mapped_column(
         String(32), nullable=False, default=MigrationJobStatus.QUEUED
     )

@@ -32,6 +32,9 @@ persistence path.
 - `approvals` for explicit plan decisions;
 - `job_events` for ordered, durable event replay.
 
+`20260717_0003_pin_job_snapshots` links each job to its exact source snapshot
+and backfills that relationship for existing rows with a matching commit SHA.
+
 The migration is forward-only and the Render start command now applies it before
 starting Uvicorn.
 
@@ -123,8 +126,8 @@ NEXT_PUBLIC_API_BASE_URL=https://migrateos.onrender.com/api/v1
 ```
 
 The updated `render.yaml` runs Alembic before Uvicorn. Deploying therefore
-requires a Supabase PostgreSQL connection that can apply revision
-`20260717_0002`.
+requires a Supabase PostgreSQL connection that can apply revisions
+`20260717_0002` and `20260717_0003`.
 
 The local frontend package manager became unresponsive during `npm ci` despite
 the npm registry being reachable and the lockfile being generated. The backend

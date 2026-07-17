@@ -448,12 +448,18 @@ class WorkflowService:
         with SessionLocal() as session:
             job = self._job_or_raise(session, job_id)
             repository = session.get(Repository, job.repository_id)
-            snapshots = session.scalars(
-                select(SourceSnapshot)
-                .where(SourceSnapshot.repository_id == job.repository_id)
-                .order_by(SourceSnapshot.captured_at.desc())
-                .limit(1)
-            ).all()
+            snapshot = (
+                session.get(SourceSnapshot, job.source_snapshot_id)
+                if job.source_snapshot_id is not None
+                else None
+            )
+            if snapshot is None and job.source_commit_sha is not None:
+                snapshot = session.scalar(
+                    select(SourceSnapshot).where(
+                        SourceSnapshot.repository_id == job.repository_id,
+                        SourceSnapshot.commit_sha == job.source_commit_sha,
+                    )
+                )
             plans = session.scalars(
                 select(PersistedMigrationPlan)
                 .where(PersistedMigrationPlan.job_id == job.id)
@@ -487,13 +493,13 @@ class WorkflowService:
                 ),
                 "snapshot": (
                     None
-                    if not snapshots
+                    if snapshot is None
                     else {
-                        "id": str(snapshots[0].id),
-                        "commit_sha": snapshots[0].commit_sha,
-                        "tree_hash": snapshots[0].tree_hash,
-                        "captured_at": snapshots[0].captured_at.isoformat(),
-                        "summary": _analysis_summary_from_metadata(snapshots[0].analysis_metadata),
+                        "id": str(snapshot.id),
+                        "commit_sha": snapshot.commit_sha,
+                        "tree_hash": snapshot.tree_hash,
+                        "captured_at": snapshot.captured_at.isoformat(),
+                        "summary": _analysis_summary_from_metadata(snapshot.analysis_metadata),
                     }
                 ),
                 "plans": [
@@ -637,7 +643,9 @@ class WorkflowService:
                     updated_at=now,
                 )
                 session.add(snapshot)
+                session.flush()
             job.source_commit_sha = analysis.snapshot.commit_sha
+            job.source_snapshot_id = snapshot.id
             job.status = MigrationJobStatus.PLANNING
             job.updated_at = now
             self._artifact(session, job, kind="repository_analysis", content=analysis_payload)
