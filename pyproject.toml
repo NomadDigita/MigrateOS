@@ -12,11 +12,14 @@ dependencies = [
   "alembic==1.16.5",
   "celery[redis]==5.5.3",
   "fastapi==0.116.1",
+  "GitPython==3.1.45",
   "psycopg[binary]==3.2.13",
   "pydantic-settings==2.10.1",
   "redis==5.2.1",
   "sqlalchemy==2.0.43",
   "structlog==25.4.0",
+  "tree-sitter==0.25.0",
+  "tree-sitter-python==0.23.6",
   "uvicorn[standard]==0.35.0",
 ]
 

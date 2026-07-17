@@ -4,6 +4,8 @@
 
 MigrateOS helps engineering teams understand, plan, execute, validate, and report safe upgrades of legacy repositories. It treats an LLM as one bounded capability inside a controlled modernization system—not as an unstructured coding chatbot.
 
+Milestone 3 adds deterministic repository intelligence: policy-aware scanning, technology/dependency/architecture detection, typed knowledge graphs, immutable snapshot metadata, and structured observability events.
+
 ## Status
 
 Milestone 2 establishes the runnable platform foundation: a Next.js command-center UI, FastAPI control plane, Celery worker boundary, PostgreSQL schema migration, Redis integration, Docker Compose topology, and CI quality gates. Repository intelligence and migration mutation remain deliberately deferred to their dedicated milestones.

@@ -59,6 +59,10 @@
 
 `GET /api/v1/health` returns the API liveness envelope (`status`, service name, environment, and UTC timestamp) without requiring dependencies. `GET /api/v1/auth/me` is an authentication scaffold: it fails closed by default and recognizes a configured local bearer token only in the development environment. Repository and job endpoints remain reserved contracts until their corresponding milestones; the platform does not claim those workflows are available yet.
 
+### Implemented in Milestone 3
+
+`POST /api/v1/repository-intelligence/analyze` accepts exactly one `local_path` or public HTTPS `github_url`, with an optional branch. The service never executes repository code. It returns typed snapshot metadata, policy-filtered files, technology/dependency/architecture findings, graph nodes/edges, health score, migration opportunities, and ordered structured analysis events.
+
 ## Command request examples
 
 ```json

@@ -6,6 +6,8 @@ MigrateOS uses a modular monolith for the control plane and independently scalab
 
 **Milestone 2 implementation:** `apps/frontend` is a standalone Next.js application; `backend` contains API/domain/application/infrastructure modules; `workers` contains the Celery process. Docker Compose starts all five local services with health-gated dependencies. The initial API exposes a liveness contract and a development-only bearer authentication boundary that rejects all requests unless explicitly configured.
 
+**Milestone 3 implementation:** repository intelligence is a deterministic application service composed of importer, bounded scanner, technology/dependency/architecture analyzers, and knowledge-graph builder. Each stage emits ordered structured events. Repository contents are read as untrusted data; no repository script is executed during analysis.
+
 ```mermaid
 flowchart LR
   U[Engineer] --> W[Next.js web app]

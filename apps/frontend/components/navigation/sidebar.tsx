@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Activity, Bot, LayoutDashboard, Settings } from "lucide-react";
+import { Activity, Bot, LayoutDashboard, ScanSearch, Settings } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
+  { href: "/repository-intelligence", label: "Repository intelligence", icon: ScanSearch },
   { href: "/dashboard#agents", label: "Agent activity", icon: Bot },
   { href: "/dashboard#stream", label: "Live stream", icon: Activity },
   { href: "/dashboard#settings", label: "Settings", icon: Settings },
