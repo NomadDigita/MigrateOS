@@ -27,6 +27,10 @@ Run the web app, API, worker, and sandbox runner as separately deployable worklo
 - Image provenance, dependency scanning, least-privileged service identities, and pinned base images.
 - Versioned database migrations as a release precondition, with expand/migrate/contract steps for breaking schema changes.
 
+## Render packaging
+
+Render deploys the API as an application, not a Python distribution. `pyproject.toml` therefore sets Poetry `package-mode = false`: Poetry installs runtime dependencies without searching for a nonexistent `migrateos/` source package. The start command imports the real package explicitly: `uvicorn backend.app.main:app`. Docker retains setuptools package discovery for its independent `pip install .` build path, which correctly includes `backend` and `workers`.
+
 ## Release procedure
 
 1. CI verifies the exact commit and publishes signed/versioned artifacts.

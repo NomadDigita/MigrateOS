@@ -32,6 +32,11 @@ dev = [
   "ruff==0.12.9",
 ]
 
+# MigrateOS is a deployable application monorepo, not a distributable `migrateos`
+# import package. Runtime imports use the explicit backend/workers packages.
+[tool.poetry]
+package-mode = false
+
 [tool.setuptools.packages.find]
 include = ["backend*", "workers*"]
 
