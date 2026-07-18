@@ -34,15 +34,13 @@ def upgrade() -> None:
         "migration_jobs",
         ["source_snapshot_id"],
     )
-    op.execute(
-        """
+    op.execute("""
         UPDATE migration_jobs AS job
         SET source_snapshot_id = snapshot.id
         FROM source_snapshots AS snapshot
         WHERE job.repository_id = snapshot.repository_id
           AND job.source_commit_sha = snapshot.commit_sha
-        """
-    )
+        """)
 
 
 def downgrade() -> None:
