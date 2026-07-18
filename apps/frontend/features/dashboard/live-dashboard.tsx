@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusDot, type SignalStatus } from "@/components/ui/status";
 import { getPlatformOverview } from "@/lib/platform-api";
+import { useAuth } from "@/components/auth/auth-provider";
 
 function signalStatus(status: string): SignalStatus {
   if (["queued", "discovering"].includes(status)) return "analyzing";
@@ -34,11 +35,47 @@ function DashboardLoading() {
 export function LiveDashboard({
   repositoryFocus = false,
 }: Readonly<{ repositoryFocus?: boolean }>) {
+  const { ready, user, signIn } = useAuth();
   const query = useQuery({
     queryKey: ["platform-overview"],
     queryFn: getPlatformOverview,
     refetchInterval: 5_000,
+    enabled: ready && Boolean(user),
   });
+  if (!ready) return <DashboardLoading />;
+  if (!user) {
+    return (
+      <GlassPanel className="border-accent-primary/30 bg-gradient-to-br from-accent-primary/10 via-surface to-accent-secondary/10">
+        <div className="relative max-w-xl py-2">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-accent-primary">
+            Private workspace
+          </p>
+          <h2 className="mt-3 font-display text-2xl font-semibold">
+            Your modernization command center is ready when you are.
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-ink-muted">
+            Sign in to see only your repositories, plans, reports, and live activity.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void signIn("github")}
+              className="rounded-xl bg-accent-primary px-4 py-2.5 text-sm font-bold text-canvas"
+            >
+              Continue with GitHub
+            </button>
+            <button
+              type="button"
+              onClick={() => void signIn("google")}
+              className="rounded-xl border border-surface-muted px-4 py-2.5 text-sm font-bold"
+            >
+              Continue with Google
+            </button>
+          </div>
+        </div>
+      </GlassPanel>
+    );
+  }
   const data = query.data;
   if (query.isError) {
     return (

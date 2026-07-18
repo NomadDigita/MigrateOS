@@ -22,8 +22,8 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     let unsubscribe: (() => void) | undefined;
     try {
       const supabase = getSupabaseBrowserClient();
-      void supabase.auth.getUser().then((result: { data: { user: User | null } }) => {
-        setUser(result.data.user);
+      void supabase.auth.getSession().then((result: { data: { session: Session | null } }) => {
+        setUser(result.data.session?.user ?? null);
         setReady(true);
       });
       const subscription = supabase.auth.onAuthStateChange(
