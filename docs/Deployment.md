@@ -31,6 +31,12 @@ Run the web app, API, worker, and sandbox runner as separately deployable worklo
 
 Render installs the MigrateOS distribution with Poetry. Its import packages are explicitly configured as `backend` and `workers`, so Poetry installs them into the virtual environment rather than guessing that a `migrateos/` package exists. The repository root must be the Render service root directory, and the start command runs `poetry run alembic -c backend/alembic.ini upgrade head` before `poetry run uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`. Configure `MIGRATEOS_DATABASE_URL` with the Supabase PostgreSQL connection string; the service uses SQLAlchemy/Alembic rather than a browser-exposed Supabase credential. Do not configure Render to run `app.main:app` or set `backend/` as the service root; both select a different import architecture. In Render Settings, leave **Root Directory** blank and use `/api/v1/health` as the **Health Check Path**. If the deploy log says `No 'script_location' key found in configuration`, Render is not using the repository root or is not receiving the `backend/alembic.ini` configuration file. Docker retains matching setuptools package discovery for its independent `pip install .` build path.
 
+### Supabase from Render (required IPv4 path)
+
+Render cannot reach Supabase's IPv6-only direct PostgreSQL endpoint (`db.<project-ref>.supabase.co`). In the Supabase dashboard, select **Connect**, copy the **Session pooler** connection string (port `5432`), replace the scheme with `postgresql+psycopg://`, and set that exact value as `MIGRATEOS_DATABASE_URL` in Render. The username for a pooled connection includes the project reference; retain it exactly as supplied by Supabase. URL-encode special characters in the password. Do not copy the direct connection string, transaction-pooler (`6543`) string, Supabase service-role key, or browser-facing API key into this setting.
+
+After saving the environment variable, run **Manual Deploy → Clear build cache & deploy**. A successful release logs the Alembic upgrade before Uvicorn starts. The durable workflow tables and `alembic_version` are created by that release; do not create them manually from the Supabase SQL editor.
+
 ## Release procedure
 
 1. CI verifies the exact commit and publishes signed/versioned artifacts.

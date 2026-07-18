@@ -58,7 +58,8 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, hsl(var(--accent-secondary) / 0.12), transparent 28%),
+    radial-gradient(circle at 86% -8%, hsl(var(--accent-secondary) / 0.19), transparent 30%),
+    radial-gradient(circle at 16% 0%, hsl(var(--accent-primary) / 0.1), transparent 26%),
     hsl(var(--canvas));
   color: hsl(var(--ink));
   font-family: var(--font-sans), sans-serif;
@@ -68,8 +69,25 @@ body {
   background: hsl(var(--accent-primary) / 0.32);
 }
 
+:focus-visible {
+  outline: 2px solid hsl(var(--accent-primary));
+  outline-offset: 3px;
+}
+
 .signal-grid {
-  background-size: 44px 44px;
+  background-image:
+    linear-gradient(hsl(var(--grid) / 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--grid) / 0.18) 1px, transparent 1px),
+    radial-gradient(circle at 80% 9%, hsl(var(--accent-secondary) / 0.16), transparent 23%),
+    radial-gradient(circle at 7% 32%, hsl(var(--accent-tertiary) / 0.09), transparent 22%);
+}
+
+.signal-grid {
+  background-size:
+    44px 44px,
+    44px 44px,
+    auto,
+    auto;
 }
 
 .glass-grain::after {

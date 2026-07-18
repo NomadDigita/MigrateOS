@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, CircleHelp } from "lucide-react";
+import { ArrowRight, CircleHelp, Network, ShieldCheck } from "lucide-react";
 
-import { MigrateOSMark } from "@/components/brand/migrateos-mark";
+import { MarketingNav } from "@/components/navigation/marketing-nav";
 
 const questions = [
   {
@@ -34,17 +34,7 @@ const questions = [
 export default function FaqPage() {
   return (
     <main className="signal-grid min-h-screen bg-grid">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <Link href="/" aria-label="MigrateOS home">
-          <MigrateOSMark />
-        </Link>
-        <Link
-          className="text-sm font-semibold text-ink-muted transition hover:text-accent-primary"
-          href="/dashboard"
-        >
-          Open command center
-        </Link>
-      </header>
+      <MarketingNav />
       <section className="mx-auto max-w-4xl px-6 pb-24 pt-16 sm:pt-24">
         <div className="rounded-[2rem] border border-accent-tertiary/25 bg-gradient-to-br from-accent-secondary/15 via-surface to-status-failed/10 p-8 shadow-glass sm:p-12">
           <CircleHelp className="text-status-validating" size={30} />
@@ -71,6 +61,28 @@ export default function FaqPage() {
               <p className="mt-4 max-w-3xl text-sm leading-7 text-ink-muted">{answer}</p>
             </details>
           ))}
+        </section>
+        <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label="Product guides">
+          <Link
+            href="/workflow"
+            className="group rounded-2xl border border-surface-muted bg-surface/70 p-5 shadow-glass transition hover:-translate-y-0.5 hover:border-accent-primary/60"
+          >
+            <Network className="text-accent-primary" size={20} />
+            <h2 className="mt-5 font-display text-xl font-semibold">Follow the workflow</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-muted">
+              See how a repository moves from snapshot to review.
+            </p>
+          </Link>
+          <Link
+            href="/security"
+            className="group rounded-2xl border border-surface-muted bg-surface/70 p-5 shadow-glass transition hover:-translate-y-0.5 hover:border-accent-tertiary/60"
+          >
+            <ShieldCheck className="text-accent-tertiary" size={20} />
+            <h2 className="mt-5 font-display text-xl font-semibold">Understand the guardrails</h2>
+            <p className="mt-2 text-sm leading-6 text-ink-muted">
+              Learn why approval, redaction, and evidence are first-class controls.
+            </p>
+          </Link>
         </section>
         <Link
           href="/"

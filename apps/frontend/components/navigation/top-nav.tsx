@@ -1,22 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun } from "lucide-react";
+import { Moon, ShieldCheck, Sun } from "lucide-react";
 
+import { MigrateOSMark } from "@/components/brand/migrateos-mark";
 import { useTheme } from "@/components/theme-provider";
 
 export function TopNav() {
   const { theme, toggleTheme } = useTheme();
   return (
-    <header className="flex items-center justify-between border-b border-surface-muted px-5 py-4 lg:px-8">
-      <Link href="/" className="font-display text-lg font-bold lg:hidden">
-        MigrateOS
+    <header className="flex items-center justify-between border-b border-surface-muted/80 bg-canvas/45 px-5 py-4 backdrop-blur-xl lg:px-8">
+      <Link href="/" className="lg:hidden" aria-label="MigrateOS home">
+        <MigrateOSMark className="gap-2" />
       </Link>
       <div className="hidden lg:block">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">
-          Workspace
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">
+          <ShieldCheck size={13} className="text-accent-primary" /> Workspace
         </p>
-        <p className="mt-1 font-display font-semibold">Modernization command center</p>
+        <p className="mt-1 font-display font-semibold tracking-tight">
+          Modernization command center
+        </p>
       </div>
       <button
         type="button"

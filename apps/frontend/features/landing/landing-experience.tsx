@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, GitPullRequest, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  FileCheck2,
+  GitPullRequest,
+  Radar,
+  ShieldCheck,
+  Sparkles,
+  Waypoints,
+} from "lucide-react";
 
-import { MigrateOSMark } from "@/components/brand/migrateos-mark";
+import { MarketingNav } from "@/components/navigation/marketing-nav";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { EcosystemStage } from "@/features/landing/ecosystem-stage";
 import { ImportForm } from "@/features/repository-import/import-form";
@@ -14,49 +23,43 @@ const reveal = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 export function LandingExperience() {
   return (
     <main className="signal-grid min-h-screen bg-grid">
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <Link href="/" aria-label="MigrateOS home">
-          <MigrateOSMark />
-        </Link>
-        <nav
-          className="flex items-center gap-5 text-sm font-semibold text-ink-muted"
-          aria-label="Primary navigation"
-        >
-          <Link className="transition hover:text-accent-primary" href="/faq">
-            FAQ
-          </Link>
-          <Link className="transition hover:text-accent-primary" href="/dashboard">
-            Open command center
-          </Link>
-        </nav>
-      </header>
+      <MarketingNav />
       <motion.section
         initial="hidden"
         animate="visible"
         transition={{ staggerChildren: 0.1 }}
-        className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:pt-28"
+        className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pt-24"
       >
         <div>
           <motion.p
             variants={reveal}
-            className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-primary"
+            className="inline-flex items-center gap-2 rounded-full border border-accent-primary/30 bg-accent-primary/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-primary"
           >
+            <span className="h-1.5 w-1.5 rounded-full bg-accent-primary shadow-[0_0_14px_hsl(var(--accent-primary))]" />
             Governed AI modernization
           </motion.p>
           <motion.h1
             variants={reveal}
-            className="mt-7 max-w-3xl font-display text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl"
+            className="mt-7 max-w-3xl font-display text-5xl font-semibold leading-[0.96] tracking-[-0.065em] sm:text-6xl xl:text-7xl"
           >
-            Legacy software, <span className="text-accent-primary">brought forward</span> with
-            evidence.
+            Modernize the codebase. <span className="text-accent-primary">Keep the proof.</span>
           </motion.h1>
           <motion.p variants={reveal} className="mt-7 max-w-xl text-lg leading-8 text-ink-muted">
-            Connect a public repository. MigrateOS persists the source snapshot, evidence-backed
-            plan, report artifacts, and replayable agent activity before any approval-gated
-            execution.
+            MigrateOS turns a public repository into a durable evidence trail: source snapshot,
+            risk-aware plan, governed execution, and a report your team can review.
           </motion.p>
           <motion.div variants={reveal}>
             <ImportForm />
+          </motion.div>
+          <motion.div
+            variants={reveal}
+            className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-ink-muted"
+          >
+            {["Source pinned", "Approval first", "Events replayable"].map((item) => (
+              <span key={item} className="flex items-center gap-2">
+                <CheckCircle2 className="text-status-success" size={16} /> {item}
+              </span>
+            ))}
           </motion.div>
         </div>
         <motion.div variants={reveal}>
@@ -91,6 +94,71 @@ export function LandingExperience() {
             </div>
           </GlassPanel>
         ))}
+      </section>
+      <section className="mx-auto max-w-7xl px-6 pb-24" aria-labelledby="proof-heading">
+        <div className="overflow-hidden rounded-[2rem] border border-surface-muted bg-surface/65 p-6 shadow-glass backdrop-blur-xl sm:p-10">
+          <div className="flex flex-col gap-5 border-b border-surface-muted/70 pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-status-validating">
+                <Waypoints size={15} /> Built for a visible decision trail
+              </p>
+              <h2
+                id="proof-heading"
+                className="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl"
+              >
+                From first scan to final review, every stage has a place.
+              </h2>
+            </div>
+            <Link
+              className="inline-flex items-center gap-2 font-bold text-accent-primary hover:text-status-validating"
+              href="/workflow"
+            >
+              See the full workflow <ArrowRight size={17} />
+            </Link>
+          </div>
+          <ol className="mt-8 grid gap-4 md:grid-cols-4">
+            {[
+              [
+                Radar,
+                "01",
+                "Discover",
+                "Map languages, dependencies, and architecture without running repository code.",
+              ],
+              [
+                FileCheck2,
+                "02",
+                "Plan",
+                "Translate findings into ordered changes, risks, and rollback controls.",
+              ],
+              [
+                ShieldCheck,
+                "03",
+                "Approve",
+                "Keep the human approval gate explicit before any constrained execution.",
+              ],
+              [
+                GitPullRequest,
+                "04",
+                "Review",
+                "Return to the report, artifacts, and historical events at any time.",
+              ],
+            ].map(([Icon, number, title, body]) => (
+              <li
+                key={number as string}
+                className="relative rounded-2xl border border-surface-muted/80 bg-canvas/45 p-5"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent-secondary/25 to-accent-tertiary/15 text-accent-tertiary">
+                  {<Icon size={18} />}
+                </span>
+                <span className="absolute right-5 top-5 font-mono text-xs font-bold text-ink-muted">
+                  {number as string}
+                </span>
+                <h3 className="mt-7 font-display text-xl font-semibold">{title as string}</h3>
+                <p className="mt-2 text-sm leading-6 text-ink-muted">{body as string}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
       <section className="mx-auto max-w-7xl px-6 pb-24" aria-labelledby="ecosystem-heading">
         <div className="rounded-[2rem] border border-surface-muted bg-gradient-to-br from-surface via-surface to-accent-secondary/10 p-6 shadow-glass sm:p-10">
@@ -150,6 +218,17 @@ export function LandingExperience() {
           </Link>
         </div>
       </section>
+      <footer className="mx-auto flex max-w-7xl flex-col gap-4 border-t border-surface-muted/70 px-6 py-10 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+        <span>Modernization that remains explainable.</span>
+        <div className="flex gap-5 font-semibold">
+          <Link className="hover:text-accent-primary" href="/security">
+            Guardrails
+          </Link>
+          <Link className="hover:text-accent-primary" href="/faq">
+            FAQ
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }

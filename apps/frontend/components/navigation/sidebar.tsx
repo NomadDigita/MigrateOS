@@ -1,39 +1,64 @@
-import Link from "next/link";
-import { LayoutDashboard, ScanSearch } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { CircleHelp, LayoutDashboard, ScanSearch, ShieldCheck } from "lucide-react";
+import { usePathname } from "next/navigation";
+
+import { MigrateOSMark } from "@/components/brand/migrateos-mark";
 import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
   { href: "/repository-intelligence", label: "Repository intelligence", icon: ScanSearch },
+  { href: "/workflow", label: "How it works", icon: ShieldCheck },
+  { href: "/faq", label: "Guides & FAQ", icon: CircleHelp },
 ];
 
 export function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-surface-muted bg-surface/40 p-5 lg:block">
-      <Link href="/" className="flex items-center gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-primary text-canvas font-display font-bold">
-          M
-        </span>
-        <span className="font-display text-lg font-bold tracking-tight">MigrateOS</span>
+    <aside className="hidden w-72 shrink-0 border-r border-surface-muted/80 bg-surface/45 p-5 backdrop-blur-2xl lg:flex lg:flex-col">
+      <Link
+        href="/"
+        className="rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+      >
+        <MigrateOSMark />
       </Link>
-      <nav className="mt-12 space-y-2" aria-label="Primary navigation">
-        {items.map(({ href, label, icon: Icon }, index) => (
+      <div className="mt-10 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">
+        Navigate
+      </div>
+      <nav className="mt-3 space-y-1.5" aria-label="Primary navigation">
+        {items.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
-              index === 0
-                ? "bg-accent-primary/12 text-accent-primary"
-                : "text-ink-muted hover:bg-elevated hover:text-ink",
+              "group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary",
+              pathname === href
+                ? "bg-gradient-to-r from-accent-primary/15 to-accent-secondary/10 text-ink shadow-[inset_0_0_0_1px_hsl(var(--accent-primary)/0.16)]"
+                : "text-ink-muted hover:bg-elevated/80 hover:text-ink",
             )}
           >
-            <Icon size={17} aria-hidden="true" />
+            <Icon
+              className={
+                pathname === href ? "text-accent-primary" : "group-hover:text-accent-primary"
+              }
+              size={17}
+              aria-hidden="true"
+            />
             {label}
           </Link>
         ))}
       </nav>
+      <div className="mt-auto overflow-hidden rounded-2xl border border-accent-secondary/20 bg-gradient-to-br from-accent-secondary/10 via-surface to-status-validating/10 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-accent-tertiary">
+          Evidence first
+        </p>
+        <p className="mt-2 text-sm leading-6 text-ink-muted">
+          Every modernization decision remains reviewable and replayable.
+        </p>
+      </div>
     </aside>
   );
 }
