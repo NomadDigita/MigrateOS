@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { AuthError } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const params = useSearchParams();
   const [message, setMessage] = useState("Finishing your secure sign-in…");
@@ -28,5 +28,19 @@ export default function AuthCallbackPage() {
     <main className="grid min-h-screen place-items-center bg-canvas px-6 text-center text-ink-muted">
       {message}
     </main>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="grid min-h-screen place-items-center bg-canvas px-6 text-center text-ink-muted">
+          Preparing secure sign-in…
+        </main>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
