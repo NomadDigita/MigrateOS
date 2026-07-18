@@ -24,5 +24,6 @@ htmlcov/
 dist/
 build/
 *.log
+*.tsbuildinfo
 postgres-data/
 redis-data/
