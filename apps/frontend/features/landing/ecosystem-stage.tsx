@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, type Transition, useReducedMotion } from "framer-motion";
 import { Bot, CheckCircle2, Database, GitBranch, ShieldCheck } from "lucide-react";
 
 const stations = [
@@ -12,7 +12,7 @@ const stations = [
 
 export function EcosystemStage() {
   const reduceMotion = useReducedMotion();
-  const transition = reduceMotion
+  const transition: Transition = reduceMotion
     ? { duration: 0 }
     : { duration: 7, repeat: Infinity, ease: "linear" };
 
