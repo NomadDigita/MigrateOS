@@ -1,0 +1,21 @@
+name: Render keepalive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping production health endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Keep Render API active
+        run: >-
+          curl --fail --show-error --silent --location
+          --connect-timeout 15 --max-time 120 --retry 3 --retry-all-errors
+          https://migrateos.onrender.com/api/v1/health
