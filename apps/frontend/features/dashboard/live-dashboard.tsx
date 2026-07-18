@@ -40,7 +40,6 @@ export function LiveDashboard({
     refetchInterval: 5_000,
   });
   const data = query.data;
-  if (query.isLoading || !data) return <DashboardLoading />;
   if (query.isError) {
     return (
       <GlassPanel>
@@ -58,6 +57,7 @@ export function LiveDashboard({
       </GlassPanel>
     );
   }
+  if (query.isLoading || !data) return <DashboardLoading />;
   if (repositoryFocus && data.repositories.length === 0) {
     return (
       <GlassPanel>
