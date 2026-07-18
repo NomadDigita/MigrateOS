@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, FileCheck2, FileText, ListChecks, Radio, ShieldCheck } from "lucide-react";
+import { Bot, FileCheck2, FileText, Radio, ShieldCheck } from "lucide-react";
 
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Skeleton } from "@/components/ui/skeleton";
