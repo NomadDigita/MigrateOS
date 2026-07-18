@@ -420,7 +420,8 @@ export function JobWorkspace({ jobId, mode }: Readonly<{ jobId: string; mode: Jo
     queryFn: () => getJobDetail(jobId),
     refetchInterval: 30_000,
   });
-  const lastSequence = query.data?.events.at(-1)?.sequence ?? 0;
+  const detail = query.data;
+  const lastSequence = detail?.events.at(-1)?.sequence ?? 0;
   const connection = useJobWebSocket(jobId, lastSequence);
   if (query.isLoading) return <JobLoading />;
   if (query.isError)
@@ -439,7 +440,7 @@ export function JobWorkspace({ jobId, mode }: Readonly<{ jobId: string; mode: Jo
         </div>
       </GlassPanel>
     );
-  const detail = query.data;
+  if (!detail) return <JobLoading />;
   return (
     <div className="space-y-6">
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
