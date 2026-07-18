@@ -101,6 +101,45 @@ body {
   mask-image: linear-gradient(to bottom, black, transparent 85%);
 }
 
+.liquid-glass {
+  box-shadow:
+    inset 0 1px 0 hsl(var(--ink) / 0.13),
+    inset 0 -1px 0 hsl(var(--accent-secondary) / 0.08),
+    0 22px 58px hsl(var(--shadow) / 0.32),
+    0 2px 0 hsl(var(--ink) / 0.03);
+  background-image:
+    linear-gradient(
+      135deg,
+      hsl(var(--ink) / 0.075),
+      transparent 28%,
+      hsl(var(--accent-secondary) / 0.075) 70%,
+      transparent
+    ),
+    radial-gradient(circle at 90% 0%, hsl(var(--accent-primary) / 0.13), transparent 30%);
+}
+
+.liquid-glass::before {
+  opacity: 0.9;
+}
+
+.club-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(hsl(0 0% 100% / 0.2) 0.55px, transparent 0.7px);
+  background-size: 4px 4px;
+  opacity: 0.12;
+  mix-blend-mode: soft-light;
+}
+
+.club-type {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.3),
+    0 12px 34px rgba(0, 0, 0, 0.48),
+    0 0 30px rgba(105, 243, 255, 0.12);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

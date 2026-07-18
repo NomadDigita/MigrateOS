@@ -16,6 +16,7 @@ import {
 import { MarketingNav } from "@/components/navigation/marketing-nav";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { EcosystemStage } from "@/features/landing/ecosystem-stage";
+import { CodingClubStage } from "@/features/landing/coding-club-stage";
 import { ImportForm } from "@/features/repository-import/import-form";
 
 const reveal = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
@@ -66,6 +67,9 @@ export function LandingExperience() {
           <EcosystemStage />
         </motion.div>
       </motion.section>
+      <section className="mx-auto max-w-7xl px-6 pb-24" aria-label="MigrateOS Coding Club">
+        <CodingClubStage />
+      </section>
       <section className="mx-auto grid max-w-7xl gap-4 px-6 pb-24 md:grid-cols-3">
         {[
           [

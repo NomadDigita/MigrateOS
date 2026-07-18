@@ -14,12 +14,12 @@ export function GlassPanel({ children, className, hoverable = false, ...props }:
   return (
     <motion.section
       className={cn(
-        "glass-grain relative overflow-hidden rounded-2xl border border-surface-muted/80 bg-surface/70 p-5 shadow-glass backdrop-blur-xl",
-        "before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-ink/30 before:to-transparent",
-        hoverable && "transition-shadow duration-300 hover:-translate-y-0.5 hover:shadow-glow",
+        "liquid-glass glass-grain relative overflow-hidden rounded-2xl border border-white/10 bg-surface/62 p-5 shadow-glass backdrop-blur-2xl",
+        "before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent",
+        hoverable && "transition-shadow duration-500 hover:shadow-glow",
         className,
       )}
-      whileHover={hoverable ? { y: -2 } : undefined}
+      whileHover={hoverable ? { y: -5, rotateX: 1, rotateY: -1, scale: 1.008 } : undefined}
       {...props}
     >
       {children}
