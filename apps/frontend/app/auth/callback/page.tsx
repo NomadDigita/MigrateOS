@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { AuthError } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -18,7 +19,7 @@ export default function AuthCallbackPage() {
     }
     void getSupabaseBrowserClient()
       .auth.exchangeCodeForSession(code)
-      .then(({ error }) => {
+      .then(({ error }: { error: AuthError | null }) => {
         if (error) setMessage(error.message);
         else router.replace(next);
       });
