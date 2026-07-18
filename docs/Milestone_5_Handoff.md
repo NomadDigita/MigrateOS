@@ -87,6 +87,11 @@ refresh.
   commit.
 - Import, plan, report, artifacts, agent history, explicit approval, SSE replay,
   WebSocket delivery, and live dashboard/job API paths are implemented.
+- Each job is pinned to its exact source snapshot, so later analyses of the
+  same repository cannot change its historical view.
+- Idempotency keys are bound to both the normalized repository URL and branch;
+  reuse with a different source revision returns a conflict instead of a stale
+  job.
 - A new workflow integration test uses a disposable relational database and
   verifies import, planning, artifact persistence, report generation, approval,
   blocked execution reporting, and event replay.
