@@ -20,10 +20,20 @@ export function TopNav() {
     setDrawerOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDrawerOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-surface-muted/80 bg-canvas/65 px-5 py-4 backdrop-blur-2xl lg:px-8">
+    <header className="sticky top-0 z-50 isolate flex min-h-[4.75rem] items-center justify-between gap-3 border-b border-surface-muted/80 bg-canvas/80 px-4 py-3 shadow-[0_12px_36px_hsl(var(--shadow)/0.22)] backdrop-blur-2xl sm:px-5 lg:px-8">
       <Link href="/" className="lg:hidden" aria-label="MigrateOS home">
-        <MigrateOSMark className="gap-2" />
+        <MigrateOSMark label={false} className="sm:hidden" />
+        <MigrateOSMark className="hidden gap-2 sm:inline-flex" />
       </Link>
       <div className="hidden lg:block">
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted">
@@ -69,31 +79,39 @@ export function TopNav() {
         </button>
       </div>
       {drawerOpen ? (
-        <nav
-          className="liquid-glass absolute left-4 right-4 top-[calc(100%+0.7rem)] rounded-2xl p-3 shadow-2xl lg:hidden"
-          aria-label="Workspace navigation"
-        >
-          <Link
-            href="/"
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-accent-primary"
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-canvas/60 backdrop-blur-sm lg:hidden"
+            aria-label="Close workspace navigation"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <nav
+            className="liquid-glass fixed left-3 right-3 top-[5.35rem] z-50 rounded-2xl p-3 shadow-2xl sm:left-4 sm:right-4 lg:hidden"
+            aria-label="Workspace navigation"
           >
-            <Home size={17} /> Back to home
-          </Link>
-          {[
-            ["/dashboard", "Command center"],
-            ["/repository-intelligence", "Repository intelligence"],
-            ["/workflow", "How it works"],
-            ["/faq", "Guides & FAQ"],
-          ].map(([href, label]) => (
             <Link
-              key={href}
-              href={href}
-              className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink-muted transition hover:bg-white/[0.06] hover:text-ink"
+              href="/"
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-accent-primary"
             >
-              {label}
+              <Home size={17} /> Back to home
             </Link>
-          ))}
-        </nav>
+            {[
+              ["/dashboard", "Command center"],
+              ["/repository-intelligence", "Repository intelligence"],
+              ["/workflow", "How it works"],
+              ["/faq", "Guides & FAQ"],
+            ].map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink-muted transition hover:bg-white/[0.06] hover:text-ink"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </>
       ) : null}
     </header>
   );

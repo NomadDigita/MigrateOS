@@ -124,8 +124,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
   if (response.ok) return (await response.json()) as T;
-  const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-  throw new Error(body?.detail ?? "The live platform request failed.");
+  const body = (await response.json().catch(() => null)) as { detail?: unknown } | null;
+  const detail = typeof body?.detail === "string" ? body.detail : null;
+  throw new Error(detail || "The live platform request failed.");
 }
 
 export function getPlatformOverview(): Promise<PlatformOverview> {

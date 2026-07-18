@@ -18,7 +18,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 shrink-0 border-r border-surface-muted/80 bg-surface/45 p-5 backdrop-blur-2xl lg:flex lg:flex-col">
+    <aside className="hidden w-72 shrink-0 border-r border-surface-muted/80 bg-surface/45 p-5 backdrop-blur-2xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
       <Link
         href="/"
         className="rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"

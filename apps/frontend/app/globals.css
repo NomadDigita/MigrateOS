@@ -133,6 +133,84 @@ body {
   mix-blend-mode: soft-light;
 }
 
+.club-scanlines {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgb(167 243 255 / 0.1) 4px
+  );
+  background-size: 100% 5px;
+  mix-blend-mode: screen;
+  mask-image: linear-gradient(to right, transparent, black 40%, black 72%, transparent);
+  animation: club-scan 9s linear infinite;
+}
+
+.club-console {
+  position: relative;
+  overflow: hidden;
+}
+
+.club-console::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 8%,
+    hsl(var(--accent-primary) / 0.09) 34%,
+    transparent 52%
+  );
+  transform: translateX(-120%);
+  animation: club-console-sheen 9s ease-in-out infinite;
+}
+
+.club-code-stream {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 0;
+  white-space: nowrap;
+  animation: club-code-type 5.5s steps(42, end) infinite;
+}
+
+@keyframes club-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 45px;
+  }
+}
+
+@keyframes club-console-sheen {
+  0%,
+  18% {
+    transform: translateX(-125%);
+  }
+  52%,
+  100% {
+    transform: translateX(125%);
+  }
+}
+
+@keyframes club-code-type {
+  0%,
+  14% {
+    max-width: 0;
+    opacity: 0.45;
+  }
+  48%,
+  78% {
+    max-width: 28rem;
+    opacity: 1;
+  }
+  100% {
+    max-width: 0;
+    opacity: 0.45;
+  }
+}
+
 .club-type {
   text-shadow:
     0 1px 0 rgba(255, 255, 255, 0.3),

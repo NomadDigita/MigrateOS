@@ -7,6 +7,13 @@ import { useMutation } from "@tanstack/react-query";
 import { importRepository } from "@/lib/platform-api";
 import { useAuth } from "@/components/auth/auth-provider";
 
+function importErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message && error.message !== "[object Object]") {
+    return error.message;
+  }
+  return "We couldn't start the analysis. Check the repository URL and try again.";
+}
+
 export function ImportForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
@@ -45,7 +52,7 @@ export function ImportForm() {
         disabled={mutation.isPending}
         className="rounded-xl bg-accent-primary px-5 py-3 font-bold text-canvas transition hover:bg-accent-primary/90 disabled:cursor-wait disabled:opacity-60"
       >
-        {mutation.isPending ? "Creating analysis job…" : "Analyze repository"}
+        {mutation.isPending ? "Creating analysis job..." : "Analyze repository"}
       </button>
       {!user ? (
         <button
@@ -58,7 +65,7 @@ export function ImportForm() {
       ) : null}
       {mutation.isError ? (
         <p id="repository-url-error" className="text-sm text-status-failed" role="alert">
-          {mutation.error.message}
+          {importErrorMessage(mutation.error)}
         </p>
       ) : null}
     </form>

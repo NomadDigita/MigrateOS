@@ -15,8 +15,8 @@ import {
 
 import { MarketingNav } from "@/components/navigation/marketing-nav";
 import { GlassPanel } from "@/components/ui/glass-panel";
-import { EcosystemStage } from "@/features/landing/ecosystem-stage";
 import { CodingClubStage } from "@/features/landing/coding-club-stage";
+import { EcosystemStage } from "@/features/landing/ecosystem-stage";
 import { ImportForm } from "@/features/repository-import/import-form";
 
 const reveal = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
@@ -29,7 +29,7 @@ export function LandingExperience() {
         initial="hidden"
         animate="visible"
         transition={{ staggerChildren: 0.1 }}
-        className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pt-24"
+        className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pt-24"
       >
         <div>
           <motion.p
@@ -41,11 +41,14 @@ export function LandingExperience() {
           </motion.p>
           <motion.h1
             variants={reveal}
-            className="mt-7 max-w-[11ch] font-display text-[clamp(3.45rem,6vw,6.85rem)] font-semibold leading-[0.92] tracking-[-0.07em]"
+            className="mt-6 max-w-[11ch] font-display text-[clamp(3rem,11vw,6.85rem)] font-semibold leading-[0.94] tracking-[-0.065em] sm:mt-7 sm:text-[clamp(3.45rem,6vw,6.85rem)]"
           >
             Modernize the codebase. <span className="text-accent-primary">Keep the proof.</span>
           </motion.h1>
-          <motion.p variants={reveal} className="mt-7 max-w-xl text-lg leading-8 text-ink-muted">
+          <motion.p
+            variants={reveal}
+            className="mt-6 max-w-xl text-base leading-7 text-ink-muted sm:mt-7 sm:text-lg sm:leading-8"
+          >
             MigrateOS turns a public repository into a durable evidence trail: source snapshot,
             risk-aware plan, governed execution, and a report your team can review.
           </motion.p>
