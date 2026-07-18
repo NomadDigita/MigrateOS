@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CircleHelp, LayoutDashboard, ScanSearch, ShieldCheck } from "lucide-react";
+import { CircleHelp, House, LayoutDashboard, ScanSearch, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { MigrateOSMark } from "@/components/brand/migrateos-mark";
@@ -24,6 +24,12 @@ export function Sidebar() {
         className="rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
       >
         <MigrateOSMark />
+      </Link>
+      <Link
+        href="/"
+        className="mt-5 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2.5 text-xs font-bold uppercase tracking-[0.13em] text-ink-muted transition hover:border-accent-primary/40 hover:text-accent-primary"
+      >
+        <House size={15} /> Back to home
       </Link>
       <div className="mt-10 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-muted">
         Navigate

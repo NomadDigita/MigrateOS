@@ -21,7 +21,7 @@ from backend.app.application.repository_intelligence.models import (
     RepositoryAnalysis,
 )
 from backend.app.application.repository_intelligence.service import RepositoryIntelligenceService
-from backend.app.core.config import get_settings
+from backend.app.api.dependencies import AuthenticatedPrincipal
 from backend.app.domain.enums import AgentRunStatus, MigrationJobStatus
 from backend.app.infrastructure.database.models import (
     AgentLog,
@@ -98,11 +98,12 @@ class WorkflowService:
         github_url: str,
         branch: str | None,
         idempotency_key: str,
+        principal: AuthenticatedPrincipal,
     ) -> dict[str, str]:
         """Persist an import command before any repository analysis begins."""
 
         with SessionLocal.begin() as session:
-            project = self._resolve_project(session)
+            project = self._resolve_project(session, principal)
             existing = session.scalar(
                 select(MigrationJob).where(
                     MigrationJob.project_id == project.id,
@@ -197,11 +198,18 @@ class WorkflowService:
 
         self._persist_analysis(job_id, analysis, plan.model_dump(mode="json"))
 
-    def approve_plan(self, *, job_id: UUID, plan_id: UUID, comment: str | None) -> dict[str, str]:
+    def approve_plan(
+        self,
+        *,
+        job_id: UUID,
+        plan_id: UUID,
+        comment: str | None,
+        principal: AuthenticatedPrincipal,
+    ) -> dict[str, str]:
         """Record an explicit approval and create a durable execution attempt."""
 
         with SessionLocal.begin() as session:
-            job = self._job_or_raise(session, job_id)
+            job = self._job_or_raise(session, job_id, principal.user_id)
             plan = session.get(PersistedMigrationPlan, plan_id)
             if plan is None or plan.job_id != job.id:
                 raise WorkflowNotFoundError(
@@ -219,6 +227,7 @@ class WorkflowService:
             session.add(
                 Approval(
                     plan_id=plan.id,
+                    actor_id=principal.user_id,
                     decision="approved",
                     comment=comment,
                     policy_version="1.0",
@@ -369,26 +378,32 @@ class WorkflowService:
                 {"status": MigrationJobStatus.NEEDS_ATTENTION.value},
             )
 
-    def platform_overview(self) -> dict[str, Any]:
+    def platform_overview(self, principal: AuthenticatedPrincipal) -> dict[str, Any]:
         """Return a dashboard projection sourced only from persisted workflow data."""
 
         with SessionLocal() as session:
             projects = session.scalars(
-                select(Project).order_by(Project.created_at.desc()).limit(20)
+                select(Project)
+                .where(Project.created_by_id == principal.user_id)
+                .order_by(Project.created_at.desc()).limit(20)
             ).all()
             repositories = session.scalars(
-                select(Repository).order_by(Repository.created_at.desc()).limit(50)
+                select(Repository).join(Project).where(Project.created_by_id == principal.user_id)
+                .order_by(Repository.created_at.desc()).limit(50)
             ).all()
             jobs = session.scalars(
-                select(MigrationJob).order_by(MigrationJob.created_at.desc()).limit(50)
+                select(MigrationJob).join(Project).where(Project.created_by_id == principal.user_id)
+                .order_by(MigrationJob.created_at.desc()).limit(50)
             ).all()
             plans = session.scalars(
-                select(PersistedMigrationPlan)
+                select(PersistedMigrationPlan).join(MigrationJob).join(Project)
+                .where(Project.created_by_id == principal.user_id)
                 .order_by(PersistedMigrationPlan.created_at.desc())
                 .limit(50)
             ).all()
             events = session.scalars(
-                select(JobEvent)
+                select(JobEvent).join(MigrationJob).join(Project)
+                .where(Project.created_by_id == principal.user_id)
                 .order_by(JobEvent.created_at.desc(), JobEvent.sequence.desc())
                 .limit(100)
             ).all()
@@ -445,11 +460,11 @@ class WorkflowService:
                 },
             }
 
-    def job_detail(self, job_id: UUID) -> dict[str, Any]:
+    def job_detail(self, job_id: UUID, principal: AuthenticatedPrincipal) -> dict[str, Any]:
         """Return the durable history needed by the live job workspace."""
 
         with SessionLocal() as session:
-            job = self._job_or_raise(session, job_id)
+            job = self._job_or_raise(session, job_id, principal.user_id)
             repository = session.get(Repository, job.repository_id)
             snapshot = (
                 session.get(SourceSnapshot, job.source_snapshot_id)
@@ -550,11 +565,13 @@ class WorkflowService:
                 "events": [_event_payload(event) for event in events],
             }
 
-    def events_after(self, job_id: UUID, after_sequence: int) -> list[dict[str, Any]]:
+    def events_after(
+        self, job_id: UUID, after_sequence: int, principal: AuthenticatedPrincipal
+    ) -> list[dict[str, Any]]:
         """Load durable events for SSE/WebSocket replay and polling."""
 
         with SessionLocal() as session:
-            self._job_or_raise(session, job_id)
+            self._job_or_raise(session, job_id, principal.user_id)
             events = session.scalars(
                 select(JobEvent)
                 .where(JobEvent.job_id == job_id, JobEvent.sequence > after_sequence)
@@ -562,34 +579,32 @@ class WorkflowService:
             ).all()
             return [_event_payload(event) for event in events]
 
-    def _resolve_project(self, session: Any) -> Project:
-        configured_project_id = get_settings().default_project_id
-        if configured_project_id:
-            try:
-                project = session.get(Project, UUID(configured_project_id))
-            except ValueError as error:
-                raise WorkflowConflictError(
-                    "MIGRATEOS_DEFAULT_PROJECT_ID is not a valid UUID."
-                ) from error
-            if project is None:
-                raise WorkflowNotFoundError("The configured default project does not exist.")
-            return project
+    def _resolve_project(self, session: Any, principal: AuthenticatedPrincipal) -> Project:
+        """Return the caller's personal workspace, creating it on first sign-in."""
 
-        existing = session.scalar(select(Project).order_by(Project.created_at.asc()).limit(1))
+        user = session.get(User, principal.user_id)
+        now = _now()
+        if user is None:
+            user = User(
+                id=principal.user_id,
+                email=principal.email or f"{principal.subject}@users.migrateos.local",
+                display_name=principal.display_name or "MigrateOS member",
+                created_at=now,
+                updated_at=now,
+            )
+            session.add(user)
+            session.flush()
+        existing = session.scalar(
+            select(Project)
+            .where(Project.created_by_id == user.id)
+            .order_by(Project.created_at.asc())
+            .limit(1)
+        )
         if existing is not None:
             return existing
-        now = _now()
-        system_user = User(
-            email="workflow-owner@migrateos.local",
-            display_name="MigrateOS workflow owner",
-            created_at=now,
-            updated_at=now,
-        )
-        session.add(system_user)
-        session.flush()
         project = Project(
-            name="MigrateOS workspace",
-            created_by_id=system_user.id,
+            name="My MigrateOS workspace",
+            created_by_id=user.id,
             created_at=now,
             updated_at=now,
         )
@@ -861,9 +876,17 @@ class WorkflowService:
         }
 
     @staticmethod
-    def _job_or_raise(session: Any, job_id: UUID) -> MigrationJob:
+    def _job_or_raise(
+        session: Any, job_id: UUID, owner_id: UUID | None = None
+    ) -> MigrationJob:
         job = session.get(MigrationJob, job_id)
-        if job is None:
+        if job is None or (
+            owner_id is not None
+            and session.scalar(
+                select(Project.id).where(Project.id == job.project_id, Project.created_by_id == owner_id)
+            )
+            is None
+        ):
             raise WorkflowNotFoundError("The migration job does not exist.")
         return job
 

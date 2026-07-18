@@ -41,7 +41,7 @@ export function LandingExperience() {
           </motion.p>
           <motion.h1
             variants={reveal}
-            className="mt-7 max-w-3xl font-display text-5xl font-semibold leading-[0.96] tracking-[-0.065em] sm:text-6xl xl:text-7xl"
+            className="mt-7 max-w-[11ch] font-display text-[clamp(3.45rem,6vw,6.85rem)] font-semibold leading-[0.92] tracking-[-0.07em]"
           >
             Modernize the codebase. <span className="text-accent-primary">Keep the proof.</span>
           </motion.h1>

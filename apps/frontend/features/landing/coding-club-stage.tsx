@@ -7,7 +7,7 @@ import { Braces, CircleCheckBig, Sparkles, Terminal } from "lucide-react";
 const signals = [
   ["Source", "Snapshot pinned", "text-accent-primary", "left-[7%] top-[13%]"],
   ["Planner", "Evidence linked", "text-status-validating", "right-[7%] top-[15%]"],
-  ["Review", "Approval ready", "text-accent-tertiary", "bottom-[13%] left-[11%]"],
+  ["Review", "Approval ready", "text-accent-tertiary", "bottom-[15%] right-[7%]"],
 ] as const;
 
 export function CodingClubStage() {
@@ -41,7 +41,7 @@ export function CodingClubStage() {
           key={title}
           animate={reduceMotion ? undefined : { y: [0, index % 2 === 0 ? -9 : 9, 0] }}
           transition={{ duration: 3.8 + index * 0.5, repeat: Infinity, ease: "easeInOut" }}
-          className={`absolute z-10 hidden rounded-2xl border border-white/20 bg-[#0b1026]/55 px-4 py-3 shadow-2xl backdrop-blur-xl lg:block ${position}`}
+          className={`absolute z-10 hidden rounded-2xl border border-white/20 bg-[#0b1026]/55 px-4 py-3 shadow-2xl backdrop-blur-xl xl:block ${position}`}
         >
           <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${tone}`}>{title}</p>
           <p className="mt-1 text-xs font-semibold text-white/85">{detail}</p>

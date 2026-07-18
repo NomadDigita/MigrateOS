@@ -32,8 +32,8 @@ export function StatCard({
             <AnimatedCounter value={value} suffix={suffix} />
           </p>
         </div>
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-accent-primary/10 text-accent-primary">
-          <Icon size={18} aria-hidden="true" />
+        <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl border border-accent-primary/20 bg-accent-primary/10 text-accent-primary shadow-[0_0_24px_hsl(var(--accent-primary)/0.2)] before:absolute before:inset-0 before:animate-pulseSignal before:rounded-full before:bg-accent-primary/20">
+          <Icon className="relative" size={18} aria-hidden="true" />
         </span>
       </div>
       <div className="relative mt-5 flex items-center justify-between gap-3">

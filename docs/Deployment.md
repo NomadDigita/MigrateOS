@@ -41,6 +41,17 @@ After saving the environment variable, run **Manual Deploy → Clear build cache
 
 Early MigrateOS deployments could have created a separate, manual Supabase schema in `public`. It is not structurally compatible with the SQLAlchemy/Alembic schema (for example, its `projects` ownership column and its plan/snapshot relationships differ), so it must never be stamped as an Alembic revision. If the database has legacy MigrateOS objects but no `alembic_version` table, run [`supabase/archive_legacy_migrateos_schema.sql`](../supabase/archive_legacy_migrateos_schema.sql) once in the Supabase SQL Editor. The script archives only those named legacy objects in `migrateos_legacy_20260718`; it does not delete their data. After it completes, deploy Render again so Alembic creates the current schema from revision `20260717_0001` through `20260717_0003`.
 
+### Production sign-in (GitHub and Google only)
+
+MigrateOS uses Supabase Auth for browser sign-in and validates the resulting access token at the API boundary. Email/password, magic-link, and anonymous sign-in are deliberately not part of this release.
+
+1. In Supabase **Authentication → URL Configuration**, set Site URL to `https://migrate-os.vercel.app` and add `https://migrate-os.vercel.app/auth/callback` to Redirect URLs.
+2. Create a GitHub OAuth App and a Google OAuth Web application. Each provider uses `https://<project-ref>.supabase.co/auth/v1/callback`; enable only GitHub and Google in Supabase Auth. Provider client secrets stay in Supabase, never Vercel or Render.
+3. In Vercel, set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for Production and Preview.
+4. In Render, set `MIGRATEOS_SUPABASE_URL` and `MIGRATEOS_SUPABASE_PUBLISHABLE_KEY`, plus `MIGRATEOS_CORS_ORIGINS=https://migrate-os.vercel.app`.
+
+The backend maps the verified Supabase user UUID to a dedicated MigrateOS user and workspace on first import. Every repository, plan, report, approval, dashboard projection, SSE replay, and WebSocket event stream is authorized against that owner; a caller cannot select another project by ID.
+
 ## Release procedure
 
 1. CI verifies the exact commit and publishes signed/versioned artifacts.

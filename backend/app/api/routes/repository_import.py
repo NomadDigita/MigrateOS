@@ -7,11 +7,12 @@ from typing import Annotated
 from urllib.parse import urlparse
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.core.config import get_settings
+from backend.app.api.dependencies import AuthenticatedPrincipal, require_authenticated_principal
 from backend.app.services.workflow import (
     WorkflowConflictError,
     WorkflowNotFoundError,
@@ -84,6 +85,7 @@ def _dispatch(background_tasks: BackgroundTasks, *, task_name: str, job_id: UUID
 async def import_repository(
     request: ImportRequest,
     background_tasks: BackgroundTasks,
+    principal: Annotated[AuthenticatedPrincipal, Depends(require_authenticated_principal)],
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> ImportResponse:
     """Persist an import command and begin repository intelligence asynchronously."""
@@ -94,6 +96,7 @@ async def import_repository(
             github_url=normalized_url,
             branch=request.branch,
             idempotency_key=idempotency_key or secrets.token_urlsafe(24),
+            principal=principal,
         )
     except WorkflowConflictError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
@@ -125,12 +128,13 @@ async def approve_plan(
     plan_id: UUID,
     request: ApprovalRequest,
     background_tasks: BackgroundTasks,
+    principal: Annotated[AuthenticatedPrincipal, Depends(require_authenticated_principal)],
 ) -> dict[str, str]:
     """Record user approval before scheduling the constrained execution stage."""
 
     try:
         result = WorkflowService().approve_plan(
-            job_id=job_id, plan_id=plan_id, comment=request.comment
+            job_id=job_id, plan_id=plan_id, comment=request.comment, principal=principal
         )
     except WorkflowNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error

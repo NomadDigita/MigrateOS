@@ -1,4 +1,5 @@
 import { publicConfig } from "./config";
+import { getSupabaseBrowserClient } from "./supabase/browser";
 
 export interface PlatformEvent {
   id: number;
@@ -109,10 +110,18 @@ export interface JobDetail {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const {
+    data: { session },
+  } = await getSupabaseBrowserClient().auth.getSession();
+  if (!session?.access_token) throw new Error("Sign in to access your private workspace.");
   const response = await fetch(`${publicConfig.apiBaseUrl}${path}`, {
     cache: "no-store",
     ...init,
-    headers: { Accept: "application/json", ...init?.headers },
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+      ...init?.headers,
+    },
   });
   if (response.ok) return (await response.json()) as T;
   const body = (await response.json().catch(() => null)) as { detail?: string } | null;

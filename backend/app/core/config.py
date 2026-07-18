@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     redis_url: RedisDsn = "redis://localhost:6379/0"
     cors_origins: str = ""
     dev_auth_token: str | None = None
+    supabase_url: str | None = None
+    supabase_publishable_key: str | None = None
     openai_model: str | None = None
     default_project_id: str | None = None
     workflow_dispatch: Literal["background", "celery"] = "background"

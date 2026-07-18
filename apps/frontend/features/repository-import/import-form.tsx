@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 
 import { importRepository } from "@/lib/platform-api";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export function ImportForm() {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const { user, signIn } = useAuth();
   const mutation = useMutation({
     mutationFn: importRepository,
     onSuccess: ({ job_id: jobId }) => router.push(`/jobs/${jobId}`),
@@ -19,6 +21,10 @@ export function ImportForm() {
       className="mt-8 flex max-w-2xl flex-col gap-3"
       onSubmit={(event) => {
         event.preventDefault();
+        if (!user) {
+          void signIn("github");
+          return;
+        }
         mutation.mutate(url.trim());
       }}
     >
@@ -41,6 +47,15 @@ export function ImportForm() {
       >
         {mutation.isPending ? "Creating analysis job…" : "Analyze repository"}
       </button>
+      {!user ? (
+        <button
+          type="button"
+          onClick={() => void signIn("google")}
+          className="text-sm font-semibold text-accent-primary hover:underline"
+        >
+          Or continue with Google
+        </button>
+      ) : null}
       {mutation.isError ? (
         <p id="repository-url-error" className="text-sm text-status-failed" role="alert">
           {mutation.error.message}

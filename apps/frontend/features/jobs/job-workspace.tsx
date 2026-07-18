@@ -14,6 +14,7 @@ import {
   jobEventsWebSocketUrl,
   type JobDetail,
 } from "@/lib/platform-api";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export type JobWorkspaceMode = "overview" | "plan" | "execution" | "agents" | "report";
 
@@ -36,10 +37,17 @@ function useJobWebSocket(jobId: string, lastSequence: number) {
     let socket: WebSocket | undefined;
     let reconnectTimer: number | undefined;
     let stopped = false;
-    const connect = () => {
+    const connect = async () => {
       if (stopped) return;
       setConnection(socket ? "reconnecting" : "connecting");
-      socket = new WebSocket(jobEventsWebSocketUrl(jobId, lastSequence));
+      const {
+        data: { session },
+      } = await getSupabaseBrowserClient().auth.getSession();
+      if (stopped || !session?.access_token) return;
+      socket = new WebSocket(jobEventsWebSocketUrl(jobId, lastSequence), [
+        "migrateos",
+        session.access_token,
+      ]);
       socket.onopen = () => setConnection("live");
       socket.onmessage = () =>
         queryClient.invalidateQueries({ queryKey: ["migration-job", jobId] });
@@ -47,7 +55,7 @@ function useJobWebSocket(jobId: string, lastSequence: number) {
         if (!stopped) reconnectTimer = window.setTimeout(connect, 1_000);
       };
     };
-    connect();
+    void connect();
     return () => {
       stopped = true;
       if (reconnectTimer) window.clearTimeout(reconnectTimer);
