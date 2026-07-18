@@ -3,6 +3,7 @@
 from pathlib import Path
 from uuid import UUID
 
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -11,7 +12,7 @@ from backend.app.application.repository_intelligence.models import AnalysisReque
 from backend.app.application.repository_intelligence.service import RepositoryIntelligenceService
 from backend.app.infrastructure.database import models  # noqa: F401
 from backend.app.infrastructure.database.base import Base
-from backend.app.services.workflow import WorkflowService
+from backend.app.services.workflow import WorkflowConflictError, WorkflowService
 
 
 def _configure_disposable_store(monkeypatch) -> None:
@@ -47,6 +48,18 @@ def test_workflow_persists_plan_report_artifacts_and_replayable_events(
         idempotency_key="workflow-test",
     )
     job_id = UUID(created["job_id"])
+    retried = service.create_import(
+        github_url="https://github.com/example/repository",
+        branch="main",
+        idempotency_key="workflow-test",
+    )
+    assert retried["job_id"] == created["job_id"]
+    with pytest.raises(WorkflowConflictError):
+        service.create_import(
+            github_url="https://github.com/example/repository",
+            branch="release",
+            idempotency_key="workflow-test",
+        )
 
     service.run_discovery(job_id)
     detail = service.job_detail(job_id)

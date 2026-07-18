@@ -111,9 +111,12 @@ class WorkflowService:
             )
             normalized_url = github_url.rstrip("/")
             if existing is not None:
-                if existing.requested_target.get("github_url") != normalized_url:
+                if (
+                    existing.requested_target.get("github_url") != normalized_url
+                    or existing.requested_target.get("branch") != branch
+                ):
                     raise WorkflowConflictError(
-                        "The Idempotency-Key was already used for another repository."
+                        "The Idempotency-Key was already used for a different repository or branch."
                     )
                 return {
                     "job_id": str(existing.id),
