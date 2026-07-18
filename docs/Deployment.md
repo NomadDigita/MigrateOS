@@ -37,6 +37,10 @@ Render cannot reach Supabase's IPv6-only direct PostgreSQL endpoint (`db.<projec
 
 After saving the environment variable, run **Manual Deploy → Clear build cache & deploy**. A successful release logs the Alembic upgrade before Uvicorn starts. The durable workflow tables and `alembic_version` are created by that release; do not create them manually from the Supabase SQL editor.
 
+### Recovering a pre-Alembic Supabase schema
+
+Early MigrateOS deployments could have created a separate, manual Supabase schema in `public`. It is not structurally compatible with the SQLAlchemy/Alembic schema (for example, its `projects` ownership column and its plan/snapshot relationships differ), so it must never be stamped as an Alembic revision. If the database has legacy MigrateOS objects but no `alembic_version` table, run [`supabase/archive_legacy_migrateos_schema.sql`](../supabase/archive_legacy_migrateos_schema.sql) once in the Supabase SQL Editor. The script archives only those named legacy objects in `migrateos_legacy_20260718`; it does not delete their data. After it completes, deploy Render again so Alembic creates the current schema from revision `20260717_0001` through `20260717_0003`.
+
 ## Release procedure
 
 1. CI verifies the exact commit and publishes signed/versioned artifacts.
