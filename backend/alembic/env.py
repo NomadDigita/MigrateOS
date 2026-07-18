@@ -10,7 +10,11 @@ from backend.app.infrastructure.database import models  # noqa: F401
 from backend.app.infrastructure.database.base import Base
 
 config = context.config
-config.set_main_option("sqlalchemy.url", str(get_settings().database_url))
+# ``ConfigParser`` reserves ``%`` for interpolation. Database passwords are
+# URL-encoded before they reach this setting, so literal percent signs must be
+# escaped for Alembic while preserving the actual SQLAlchemy connection URL.
+database_url = str(get_settings().database_url).replace("%", "%%")
+config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
