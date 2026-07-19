@@ -26,8 +26,8 @@ class AuthenticatedPrincipal:
         return UUID(self.subject)
 
 
-async def require_authenticated_principal(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+async def authenticate_access_token(
+    credentials: HTTPAuthorizationCredentials | None,
     settings: Settings | None = None,
 ) -> AuthenticatedPrincipal:
     """Validate a Supabase access token and return its trusted user identity."""
@@ -84,3 +84,11 @@ async def require_authenticated_principal(
         detail="Authentication is required.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+
+async def require_authenticated_principal(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> AuthenticatedPrincipal:
+    """FastAPI dependency that exposes only HTTP authentication inputs to OpenAPI."""
+
+    return await authenticate_access_token(credentials)

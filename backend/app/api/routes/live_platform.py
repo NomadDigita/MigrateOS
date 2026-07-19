@@ -13,7 +13,11 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.services.workflow import WorkflowNotFoundError, WorkflowService
-from backend.app.api.dependencies import AuthenticatedPrincipal, require_authenticated_principal
+from backend.app.api.dependencies import (
+    AuthenticatedPrincipal,
+    authenticate_access_token,
+    require_authenticated_principal,
+)
 
 router = APIRouter(tags=["live platform"])
 
@@ -118,7 +122,7 @@ async def websocket_event_stream(
     from fastapi.security import HTTPAuthorizationCredentials
 
     try:
-        principal = await require_authenticated_principal(
+        principal = await authenticate_access_token(
             HTTPAuthorizationCredentials(scheme="Bearer", credentials=requested_protocols[1])
         )
     except HTTPException:

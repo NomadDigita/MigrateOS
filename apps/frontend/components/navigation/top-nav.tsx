@@ -82,34 +82,36 @@ export function TopNav() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-canvas/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-canvas/90 backdrop-blur-xl lg:hidden"
             aria-label="Close workspace navigation"
             onClick={() => setDrawerOpen(false)}
           />
           <nav
-            className="liquid-glass fixed left-3 right-3 top-[5.35rem] z-50 rounded-2xl p-3 shadow-2xl sm:left-4 sm:right-4 lg:hidden"
+            className="fixed inset-x-0 bottom-0 top-[4.75rem] z-50 overflow-y-auto border-t border-white/10 bg-canvas/98 px-4 py-6 shadow-[0_-18px_80px_hsl(var(--shadow)/0.55)] lg:hidden"
             aria-label="Workspace navigation"
           >
-            <Link
-              href="/"
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-accent-primary"
-            >
-              <Home size={17} /> Back to home
-            </Link>
-            {[
-              ["/dashboard", "Command center"],
-              ["/repository-intelligence", "Repository intelligence"],
-              ["/workflow", "How it works"],
-              ["/faq", "Guides & FAQ"],
-            ].map(([href, label]) => (
+            <div className="liquid-glass mx-auto max-w-md rounded-[1.75rem] border border-white/15 bg-surface/95 p-3 shadow-2xl">
               <Link
-                key={href}
-                href={href}
-                className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink-muted transition hover:bg-white/[0.06] hover:text-ink"
+                href="/"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-accent-primary"
               >
-                {label}
+                <Home size={17} /> Back to home
               </Link>
-            ))}
+              {[
+                ["/dashboard", "Command center"],
+                ["/repository-intelligence", "Repository intelligence"],
+                ["/workflow", "How it works"],
+                ["/faq", "Guides & FAQ"],
+              ].map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink-muted transition hover:bg-white/[0.06] hover:text-ink"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </nav>
         </>
       ) : null}
