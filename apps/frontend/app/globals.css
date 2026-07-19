@@ -218,6 +218,101 @@ body {
     0 0 30px rgba(105, 243, 255, 0.12);
 }
 
+.workflow-orbit {
+  animation: workflow-orbit 18s linear infinite;
+}
+
+.workflow-core {
+  animation: workflow-core 4.8s ease-in-out infinite;
+}
+
+.workflow-type {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 0;
+  white-space: nowrap;
+  animation: workflow-type 5.5s steps(29, end) infinite;
+}
+
+.workflow-card-glow {
+  position: absolute;
+  right: -2.5rem;
+  top: -2.5rem;
+  height: 9rem;
+  width: 9rem;
+  border-radius: 999px;
+  filter: blur(25px);
+  opacity: 0.17;
+  transition:
+    opacity 400ms ease,
+    transform 600ms ease;
+}
+
+.group:hover .workflow-card-glow {
+  opacity: 0.35;
+  transform: scale(1.3);
+}
+
+.workflow-card-glow-cyan {
+  background: hsl(var(--accent-primary));
+}
+.workflow-card-glow-violet {
+  background: hsl(var(--accent-secondary));
+}
+.workflow-card-glow-pink {
+  background: hsl(var(--accent-tertiary));
+}
+.workflow-card-glow-gold {
+  background: hsl(var(--status-validating));
+}
+
+.faq-orbit {
+  animation: faq-orbit 8s ease-in-out infinite;
+}
+
+@keyframes workflow-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes workflow-core {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+
+@keyframes workflow-type {
+  0%,
+  14% {
+    max-width: 0;
+    opacity: 0.45;
+  }
+  48%,
+  74% {
+    max-width: 23rem;
+    opacity: 1;
+  }
+  100% {
+    max-width: 0;
+    opacity: 0.45;
+  }
+}
+
+@keyframes faq-orbit {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
